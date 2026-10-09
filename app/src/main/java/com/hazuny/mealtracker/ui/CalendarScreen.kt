@@ -206,17 +206,6 @@ fun CalendarScreen(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
-            ) {
-                Text(
-                    "미달성(연한 빨강) · 일부 달성(파랑) · 모두 달성(진한 파랑)\n기록 없음(회색) · 목표 미설정(연한 하늘색) · 오늘 진행 중(테두리)",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }
