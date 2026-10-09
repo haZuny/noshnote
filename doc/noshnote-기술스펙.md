@@ -1,8 +1,8 @@
-# meal-tracker 기술 스펙
+# NoshNote 기술 스펙
 
 - **문서 상태:** 결정 사항
 - **대상 플랫폼:** Android 전용
-- **관련 문서:** [제품 요구사항 문서](meal-tracker-PRD.md), [디자인 프로토타입](meal-tracker-디자인-프로토타입.html)
+- **관련 문서:** [제품 요구사항 문서](noshnote-PRD.md), [디자인 프로토타입](noshnote-디자인-프로토타입.html)
 
 ## 1. 기술 방향
 

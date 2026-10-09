@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ocr
+package com.hazuny.noshnote.ocr
 
 /** Values read from a nutrition label. They retain the label's serving basis. */
 data class NutritionLabelValues(

@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -58,9 +58,9 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
-import com.hazuny.mealtracker.ocr.NutritionLabelParser
-import com.hazuny.mealtracker.ocr.NutritionLabelCandidates
-import com.hazuny.mealtracker.ocr.NutritionLabelValues
+import com.hazuny.noshnote.ocr.NutritionLabelParser
+import com.hazuny.noshnote.ocr.NutritionLabelCandidates
+import com.hazuny.noshnote.ocr.NutritionLabelValues
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.TimeUnit

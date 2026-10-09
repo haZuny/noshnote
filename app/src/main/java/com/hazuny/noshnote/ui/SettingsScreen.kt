@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,9 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
-import com.hazuny.mealtracker.MealViewModel
-import com.hazuny.mealtracker.data.FoodTemplateEntity
-import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
+import com.hazuny.noshnote.MealViewModel
+import com.hazuny.noshnote.data.FoodTemplateEntity
+import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 
 @Composable
 fun SettingsScreen(
@@ -58,12 +58,12 @@ fun SettingsScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = MealTrackerSpacing.screenHorizontal,
-            top = MealTrackerSpacing.screenTop,
-            end = MealTrackerSpacing.screenHorizontal,
-            bottom = MealTrackerSpacing.screenBottom,
+            start = NoshNoteSpacing.screenHorizontal,
+            top = NoshNoteSpacing.screenTop,
+            end = NoshNoteSpacing.screenHorizontal,
+            bottom = NoshNoteSpacing.screenBottom,
         ),
-        verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
+        verticalArrangement = Arrangement.spacedBy(NoshNoteSpacing.section),
     ) {
         item {
             Card(
@@ -72,7 +72,7 @@ fun SettingsScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
-                Column(Modifier.fillMaxWidth().padding(MealTrackerSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.fillMaxWidth().padding(NoshNoteSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("일일 목표", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -126,7 +126,7 @@ fun SettingsScreen(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 ) {
-                    Text("등록한 음식이 아직 없어요. 바로 기록에는 음식 등록이 필요하지 않아요.", modifier = Modifier.padding(MealTrackerSpacing.cardPadding), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("등록한 음식이 아직 없어요. 바로 기록에는 음식 등록이 필요하지 않아요.", modifier = Modifier.padding(NoshNoteSpacing.cardPadding), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         } else {

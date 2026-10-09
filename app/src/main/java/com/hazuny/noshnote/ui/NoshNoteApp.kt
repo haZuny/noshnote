@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,7 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.hazuny.mealtracker.MealViewModel
+import com.hazuny.noshnote.MealViewModel
 import java.time.LocalDate
 
 private data class MainDestination(
@@ -50,7 +50,7 @@ private val mainDestinations = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MealTrackerApp(viewModel: MealViewModel) {
+fun NoshNoteApp(viewModel: MealViewModel) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route ?: "home"

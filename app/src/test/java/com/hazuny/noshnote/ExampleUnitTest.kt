@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker
+package com.hazuny.noshnote
 
 import org.junit.Test
 

@@ -1,12 +1,12 @@
-package com.hazuny.mealtracker
+package com.hazuny.noshnote
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.hazuny.mealtracker.data.MealDatabase
-import com.hazuny.mealtracker.data.MealRepository
+import com.hazuny.noshnote.data.MealDatabase
+import com.hazuny.noshnote.data.MealRepository
 
-class MealTrackerApplication : Application() {
+class NoshNoteApplication : Application() {
     lateinit var viewModelFactory: MealViewModelFactory
         private set
 

@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.data
+package com.hazuny.noshnote.data
 
 import java.time.LocalDate
 import java.time.LocalTime

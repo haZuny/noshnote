@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "com.hazuny.mealtracker"
+    namespace = "com.hazuny.noshnote"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.hazuny.mealtracker"
+        applicationId = "com.hazuny.noshnote"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

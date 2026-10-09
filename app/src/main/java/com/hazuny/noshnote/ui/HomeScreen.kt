@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -41,10 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hazuny.mealtracker.MealViewModel
-import com.hazuny.mealtracker.data.FoodTemplateEntity
-import com.hazuny.mealtracker.data.MealEntryEntity
-import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
+import com.hazuny.noshnote.MealViewModel
+import com.hazuny.noshnote.data.FoodTemplateEntity
+import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -77,12 +77,12 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = MealTrackerSpacing.screenHorizontal,
-            end = MealTrackerSpacing.screenHorizontal,
-            top = MealTrackerSpacing.screenTop,
-            bottom = MealTrackerSpacing.screenBottom,
+            start = NoshNoteSpacing.screenHorizontal,
+            end = NoshNoteSpacing.screenHorizontal,
+            top = NoshNoteSpacing.screenTop,
+            bottom = NoshNoteSpacing.screenBottom,
         ),
-        verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
+        verticalArrangement = Arrangement.spacedBy(NoshNoteSpacing.section),
     ) {
         item {
             Row(
@@ -253,7 +253,7 @@ private fun DailySummaryCard(calories: Double, protein: Double, goalCalories: Do
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .55f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(MealTrackerSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(modifier = Modifier.padding(NoshNoteSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text("오늘 섭취 현황", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             NutrientProgress("칼로리", calories, goalCalories, "kcal", MaterialTheme.colorScheme.primary)
             NutrientProgress("단백질", protein, goalProtein, "g", MaterialTheme.colorScheme.secondary)

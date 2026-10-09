@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.data
+package com.hazuny.noshnote.data
 
 import android.content.Context
 import androidx.room3.Dao

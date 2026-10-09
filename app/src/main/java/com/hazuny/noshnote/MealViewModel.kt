@@ -1,11 +1,11 @@
-package com.hazuny.mealtracker
+package com.hazuny.noshnote
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hazuny.mealtracker.data.DailyGoalEntity
-import com.hazuny.mealtracker.data.FoodTemplateEntity
-import com.hazuny.mealtracker.data.MealEntryEntity
-import com.hazuny.mealtracker.data.MealRepository
+import com.hazuny.noshnote.data.DailyGoalEntity
+import com.hazuny.noshnote.data.FoodTemplateEntity
+import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.data.MealRepository
 import java.time.LocalDate
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

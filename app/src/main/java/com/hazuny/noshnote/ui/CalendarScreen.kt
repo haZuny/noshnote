@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.navigationBarsPadding
-import com.hazuny.mealtracker.data.MealEntryEntity
-import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
+import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -94,7 +94,7 @@ fun CalendarScreen(
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compactWidth = maxWidth < 360.dp
-        val horizontalPadding = if (compactWidth) 12.dp else MealTrackerSpacing.screenHorizontal
+        val horizontalPadding = if (compactWidth) 12.dp else NoshNoteSpacing.screenHorizontal
         val gridGap = if (compactWidth || fontScale >= 1.3f) 3.dp else 5.dp
         val calendarWidth = (maxWidth - horizontalPadding * 2).coerceAtMost(420.dp)
         val cellWidth = (calendarWidth - gridGap * 6) / 7
@@ -106,8 +106,8 @@ fun CalendarScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = horizontalPadding, vertical = MealTrackerSpacing.screenTop),
-            verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
+                .padding(horizontal = horizontalPadding, vertical = NoshNoteSpacing.screenTop),
+            verticalArrangement = Arrangement.spacedBy(NoshNoteSpacing.section),
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),

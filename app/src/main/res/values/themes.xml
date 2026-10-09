@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.MealTracker" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.NoshNote" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#2588B2</item>
         <item name="android:statusBarColor">#F7FAFC</item>

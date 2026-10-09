@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui
+package com.hazuny.noshnote.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,8 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.hazuny.mealtracker.data.FoodTemplateEntity
-import com.hazuny.mealtracker.data.MealEntryEntity
+import com.hazuny.noshnote.data.FoodTemplateEntity
+import com.hazuny.noshnote.data.MealEntryEntity
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime

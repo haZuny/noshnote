@@ -1,4 +1,4 @@
-package com.hazuny.mealtracker.ui.theme
+package com.hazuny.noshnote.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
-object MealTrackerSpacing {
+object NoshNoteSpacing {
     val screenHorizontal = 18.dp
     val screenTop = 12.dp
     val screenBottom = 24.dp
@@ -16,7 +16,7 @@ object MealTrackerSpacing {
     val cardPadding = 16.dp
 }
 
-private val MealTrackerShapes = Shapes(
+private val NoshNoteShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
     small = RoundedCornerShape(12.dp),
     medium = RoundedCornerShape(16.dp),
@@ -24,7 +24,7 @@ private val MealTrackerShapes = Shapes(
     extraLarge = RoundedCornerShape(24.dp),
 )
 
-private val MealTrackerColors = lightColorScheme(
+private val NoshNoteColors = lightColorScheme(
     primary = Color(0xFF2588B2),
     onPrimary = Color.White,
     primaryContainer = Color(0xFFE5F4FB),
@@ -49,10 +49,10 @@ private val MealTrackerColors = lightColorScheme(
 )
 
 @Composable
-fun MealTrackerTheme(content: @Composable () -> Unit) {
+fun NoshNoteTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = MealTrackerColors,
-        shapes = MealTrackerShapes,
+        colorScheme = NoshNoteColors,
+        shapes = NoshNoteShapes,
         content = content,
     )
 }

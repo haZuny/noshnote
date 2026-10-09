@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Meal Tracker"
+rootProject.name = "NoshNote"
 include(":app")
