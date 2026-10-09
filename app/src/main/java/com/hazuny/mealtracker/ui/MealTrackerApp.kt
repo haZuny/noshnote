@@ -80,6 +80,8 @@ fun MealTrackerApp(viewModel: MealViewModel) {
             composable("calendar") {
                 CalendarScreen(
                     entries = entries,
+                    goalCalories = goal?.caloriesKcal,
+                    goalProtein = goal?.proteinG,
                     onSelectDate = { dateKey ->
                         selectedDateKey = dateKey
                         navController.navigate("home") {

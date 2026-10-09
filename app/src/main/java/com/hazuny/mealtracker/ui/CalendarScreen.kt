@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -49,12 +48,15 @@ import java.util.Locale
 @Composable
 fun CalendarScreen(
     entries: List<MealEntryEntity>,
+    goalCalories: Double?,
+    goalProtein: Double?,
     onSelectDate: (String) -> Unit,
 ) {
     var monthKey by rememberSaveable { mutableStateOf(LocalDate.now().withDayOfMonth(1).toString()) }
     val month = LocalDate.parse(monthKey)
     val today = LocalDate.now()
     val datesWithRecords = remember(entries) { entries.map { it.dateKey }.toSet() }
+    val entriesByDate = remember(entries) { entries.groupBy { it.dateKey } }
     val monthRecordDays = remember(entries, monthKey) {
         entries.asSequence().filter { it.dateKey.startsWith(monthKey.take(7)) }.map { it.dateKey }.toSet().size
     }
@@ -191,7 +193,9 @@ fun CalendarScreen(
                             } else {
                                 CalendarDay(
                                     date = date,
-                                    hasRecord = date.toString() in datesWithRecords,
+                                    entriesForDate = entriesByDate[date.toString()].orEmpty(),
+                                    goalCalories = goalCalories,
+                                    goalProtein = goalProtein,
                                     modifier = Modifier.weight(1f).height(cellHeight),
                                     dayNumberFontSize = dayNumberFontSize,
                                     onClick = { onSelectDate(date.toString()) },
@@ -204,17 +208,10 @@ fun CalendarScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.Top,
             ) {
-                Spacer(
-                    Modifier
-                        .size(11.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF9FD2E8)),
-                )
                 Text(
-                    "기록한 날 · 오늘은 테두리로 표시",
+                    "미달성(연한 빨강) · 일부 달성(파랑) · 모두 달성(진한 파랑)\n기록 없음(회색) · 목표 미설정(연한 하늘색) · 오늘 진행 중(테두리)",
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -239,18 +236,52 @@ private fun CalendarStat(label: String, value: String, modifier: Modifier = Modi
 @Composable
 private fun CalendarDay(
     date: LocalDate,
-    hasRecord: Boolean,
+    entriesForDate: List<MealEntryEntity>,
+    goalCalories: Double?,
+    goalProtein: Double?,
     modifier: Modifier = Modifier,
     dayNumberFontSize: androidx.compose.ui.unit.TextUnit,
     onClick: () -> Unit,
 ) {
     val isToday = date == LocalDate.now()
+    val hasRecord = entriesForDate.isNotEmpty()
+    val calories = entriesForDate.sumOf { it.caloriesKcalSnapshot }
+    val protein = entriesForDate.sumOf { it.proteinGSnapshot }
+    val caloriesGoalValue = goalCalories?.takeIf { it > 0 }
+    val proteinGoalValue = goalProtein?.takeIf { it > 0 }
+    val goalCount = (if (caloriesGoalValue != null) 1 else 0) + (if (proteinGoalValue != null) 1 else 0)
+    val achievedGoalCount =
+        (if (caloriesGoalValue != null && calories <= caloriesGoalValue) 1 else 0) +
+            (if (proteinGoalValue != null && protein >= proteinGoalValue) 1 else 0)
+    val backgroundColor = when {
+        !hasRecord -> Color(0xFFF0F3F5)
+        goalCount == 0 -> Color(0xFFE4F4FA)
+        achievedGoalCount == 0 -> Color(0xFFFCE8E6)
+        achievedGoalCount < goalCount -> Color(0xFFB8E0EF)
+        else -> Color(0xFF2588B2)
+    }
+    val contentColor = if (goalCount > 0 && achievedGoalCount == goalCount) {
+        Color.White
+    } else {
+        Color(0xFF194E66)
+    }
+    val statusDescription = when {
+        isToday && !hasRecord -> "오늘 진행 중, 아직 기록 없음"
+        isToday && goalCount == 0 -> "오늘 진행 중, 목표 미설정"
+        isToday -> "오늘 진행 중, 현재 $achievedGoalCount/$goalCount 목표 달성"
+        !hasRecord -> "기록 없음"
+        goalCount == 0 -> "기록 있음, 목표 미설정"
+        achievedGoalCount == 0 -> "미달성, 0/$goalCount 목표"
+        achievedGoalCount < goalCount -> "일부 달성, $achievedGoalCount/$goalCount 목표"
+        else -> "성공, $achievedGoalCount/$goalCount 목표"
+    }
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(if (hasRecord) Color(0xFF9FD2E8) else Color(0xFFF0F3F5))
+            .background(backgroundColor)
             .then(if (isToday) Modifier.border(1.5.dp, Color(0xFF287FA5), RoundedCornerShape(10.dp)) else Modifier)
             .clickable(onClick = onClick)
+            .semantics { contentDescription = "${date.monthValue}월 ${date.dayOfMonth}일, $statusDescription" }
             .then(if (isToday) Modifier.padding(1.dp) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -262,16 +293,7 @@ private fun CalendarDay(
             fontSize = dayNumberFontSize,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Medium,
-            color = if (hasRecord) Color(0xFF194E66) else MaterialTheme.colorScheme.onSurface,
+            color = if (hasRecord) contentColor else MaterialTheme.colorScheme.onSurface,
         )
-        if (hasRecord) {
-            Spacer(
-                Modifier
-                    .padding(top = 3.dp)
-                    .size(5.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF194E66)),
-            )
-        }
     }
 }

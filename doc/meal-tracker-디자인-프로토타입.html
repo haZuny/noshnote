@@ -101,21 +101,14 @@
     .weekday { padding: 7px 0; color: var(--muted); font-size: 11px; }
     .day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; position: relative; border: 1px solid transparent; min-height: 49px; padding: 4px 1px; border-radius: 11px; color: var(--ink); font-weight: 600; }
     .day.level-0 { background: #f0f3f5; color: #6e7c84; }
-    .day.level-1 { background: #e3f4fa; color: #386179; }
+    .day.level-1 { background: #fce8e6; color: #8a3e36; }
     .day.level-2 { background: #9fd2e8; color: #194e66; }
     .day.level-3 { background: #176f96; color: #fff; }
     .day.level-today { background: #eaf5fa; color: #315e76; }
     .day.outside { opacity: .38; }
     .day.selected { outline: 2px solid #155f82; outline-offset: 1px; }
     .day.today { border-color: #287fa5; }
-    .day .mark { display: block; font-size: 9px; font-weight: 500; line-height: 1; color: inherit; }
-    .legend { display: flex; flex-wrap: wrap; gap: 9px 12px; margin-top: 14px; color: var(--muted); font-size: 11px; }
-    .legend span { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-swatch { width: 11px; height: 11px; border-radius: 4px; }
-    .legend-swatch.level-0 { background: #f0f3f5; border: 1px solid #dfe5e9; }
-    .legend-swatch.level-1 { background: #e3f4fa; }
-    .legend-swatch.level-2 { background: #9fd2e8; }
-    .legend-swatch.level-3 { background: #176f96; }
+    .legend { margin-top: 14px; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .settings-group { margin-top: 21px; }
     .settings-group h2 { margin-bottom: 10px; }
     .field { display: grid; gap: 6px; margin: 12px 0; }
@@ -164,7 +157,7 @@
       <div class="calendar-stats" id="calendar-stats"></div>
       <div class="toolbar"><button class="icon-btn" id="prev-month" aria-label="이전 달">‹</button><div class="month-label" id="month-label"></div><button class="icon-btn" id="next-month" aria-label="다음 달">›</button></div>
       <div id="calendar" class="calendar"></div>
-      <div class="legend"><span><i class="legend-swatch level-0"></i>기록 없음</span><span><i class="legend-swatch level-1"></i>기록</span><span><i class="legend-swatch level-2"></i>목표 1개</span><span><i class="legend-swatch level-3"></i>목표 2개</span><span>오늘은 테두리</span></div>
+      <div class="legend">색상: 기록 없음(회색) · 미달성(연한 빨강) · 일부 달성(파랑) · 모두 달성(진한 파랑). 오늘은 테두리로 진행 중 표시.</div>
     </section>
 
     <section id="settings" class="screen" aria-labelledby="settings-title">
@@ -276,18 +269,17 @@
           const key = dateKey(d), inMonth = d.getMonth() === m;
           const items = entriesFor(key);
           const totals = totalsFor(key);
-          let level = 0, status = '기록 없음', mark = '·';
+          let level = 0, status = '기록 없음';
           if (key === today) {
-            level = 'today'; status = '오늘 진행 중'; mark = '진행';
+            level = 'today'; status = '오늘 진행 중';
           } else if (items.length) {
-            const kcalOK = totals.kcal <= Number(state.goals.kcal) && totals.kcal > 0;
+            const kcalOK = totals.kcal <= Number(state.goals.kcal);
             const proteinOK = totals.protein >= Number(state.goals.protein);
             const goalCount = Number(kcalOK) + Number(proteinOK);
             level = goalCount === 2 ? 3 : goalCount === 1 ? 2 : 1;
-            status = goalCount === 2 ? '두 목표 달성' : goalCount === 1 ? '목표 하나 달성' : '기록 있음';
-            mark = goalCount === 2 ? '2/2' : goalCount === 1 ? '1/2' : '기록';
+            status = goalCount === 2 ? '두 목표 모두 달성' : goalCount === 1 ? '일부 달성' : '목표 미달성';
           }
-          html += `<button class="day level-${level} ${inMonth?'':'outside'} ${key===selectedDate?'selected':''} ${key===today?'today':''}" data-date="${key}" aria-label="${dateLabel(key)}, ${status}">${d.getDate()}<span class="mark">${mark}</span></button>`;
+          html += `<button class="day level-${level} ${inMonth?'':'outside'} ${key===selectedDate?'selected':''} ${key===today?'today':''}" data-date="${key}" aria-label="${dateLabel(key)}, ${status}">${d.getDate()}</button>`;
         }
         document.getElementById('calendar').innerHTML = html;
         document.querySelectorAll('[data-date]').forEach(button => button.addEventListener('click', () => { selectedDate = button.dataset.date; showScreen('home'); render(); }));
