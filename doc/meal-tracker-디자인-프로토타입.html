@@ -328,6 +328,20 @@
         openModal(`<div class="sheet-head"><h2 id="modal-title">${entry ? '기록 수정' : '바로 기록'}</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><form id="direct-form"><div class="field"><label for="direct-name">음식 이름</label><input id="direct-name" required value="${escapeHtml(entry?.name || '')}" placeholder="예: 닭가슴살"></div><div class="input-row"><div class="field"><label for="direct-quantity">이번에 먹은 양</label><input id="direct-quantity" type="number" min="0.01" step="any" required value="${entry?.quantity ?? 1}"></div><div class="field"><label for="direct-unit">단위</label><input id="direct-unit" value="${escapeHtml(entry?.unit || '인분')}" placeholder="g, 개, 인분"></div></div><div class="notice">아래 영양값은 기준량이 아니라 이번에 먹은 전체 양의 값이에요.</div><div class="input-row"><div class="field"><label for="direct-kcal">칼로리 (kcal)</label><input id="direct-kcal" type="number" min="0" step="any" required value="${entry?.kcal ?? ''}"></div><div class="field"><label for="direct-protein">단백질 (g)</label><input id="direct-protein" type="number" min="0" step="any" required value="${entry?.protein ?? ''}"></div></div><div class="input-row"><div class="field"><label for="direct-time">먹은 시간</label><input id="direct-time" type="time" required value="${time}"></div><div class="field"><label for="direct-tag">식사 태그 (자동 선택·수정 가능)</label><select id="direct-tag">${tagOptions(initialTag)}</select></div></div>${entry ? '' : '<label style="display:flex;align-items:center;gap:9px;margin-top:8px;font-size:13px"><input id="save-template" type="checkbox"> 다음에도 쓰도록 음식 목록에 저장</label>'}<div class="sheet-actions">${entry ? '<button type="button" class="danger-btn" id="delete-entry">기록 삭제</button>' : '<button type="button" class="secondary" data-close>취소</button>'}<button class="primary" type="submit">${entry ? '변경 저장' : '기록 추가'}</button></div></form>`);
         document.querySelectorAll('[data-close]').forEach(button => button.onclick = closeModal);
         const wasTagManuallySet = bindTimeTag('direct-time', 'direct-tag', tagManuallySet);
+        const directNutritionFields = document.getElementById('direct-kcal').closest('.input-row');
+        const nutritionOcrButton = document.createElement('button');
+        nutritionOcrButton.type = 'button';
+        nutritionOcrButton.className = 'secondary wide';
+        nutritionOcrButton.textContent = '성분표에서 값 가져오기';
+        const nutritionOcrNote = document.createElement('p');
+        nutritionOcrNote.className = 'subtle';
+        nutritionOcrNote.textContent = '프로토타입에서는 예시값을 입력해요.';
+        directNutritionFields.after(nutritionOcrButton, nutritionOcrNote);
+        nutritionOcrButton.onclick = () => {
+          document.getElementById('direct-kcal').value = '120';
+          document.getElementById('direct-protein').value = '18';
+          nutritionOcrNote.textContent = '예시 결과(1회 제공량 100g)를 입력했어요. 실제 카메라 OCR은 Android 앱에서 동작해요.';
+        };
         document.getElementById('direct-form').onsubmit = event => {
           event.preventDefault();
           const quantity = Number(document.getElementById('direct-quantity').value);

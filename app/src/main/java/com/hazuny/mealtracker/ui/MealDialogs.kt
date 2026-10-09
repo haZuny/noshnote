@@ -72,6 +72,8 @@ fun RecordEditorDialog(
     var mealTag by remember(entry?.id) { mutableStateOf(entry?.mealTag ?: inferMealTag(initialTime)) }
     var tagManual by remember(entry?.id) { mutableStateOf(entry?.tagSource == "manual") }
     var saveTemplate by remember(entry?.id) { mutableStateOf(false) }
+    var nutritionBasis by remember(entry?.id) { mutableStateOf<String?>(null) }
+    var showNutritionScanner by remember { mutableStateOf(false) }
     var tagMenuExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val tags = listOf("아침", "점심", "저녁", "간식", "태그 없음")
@@ -114,6 +116,12 @@ fun RecordEditorDialog(
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
+                }
+                OutlinedButton(onClick = { showNutritionScanner = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text("성분표에서 값 가져오기")
+                }
+                nutritionBasis?.let { basis ->
+                    Text("읽은 성분표 기준: $basis", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
@@ -194,6 +202,19 @@ fun RecordEditorDialog(
             }
         },
     )
+
+    if (showNutritionScanner) {
+        NutritionLabelScannerDialog(
+            reviewNote = "읽은 칼로리와 단백질을 입력칸에 그대로 채워요. 이번에 먹은 양과 다르면 저장 전에 수정해 주세요.",
+            onDismiss = { showNutritionScanner = false },
+            onApply = { values ->
+                calories = formatInputAmount(values.caloriesKcal)
+                protein = formatInputAmount(values.proteinG)
+                nutritionBasis = values.basisDescription ?: "확인되지 않음"
+                showNutritionScanner = false
+            },
+        )
+    }
 }
 
 @Composable
@@ -318,6 +339,8 @@ fun FoodTemplateEditorDialog(
     var unit by remember(template?.id) { mutableStateOf(template?.unit ?: "개") }
     var calories by remember(template?.id) { mutableStateOf(template?.caloriesPerUnitKcal?.toString().orEmpty()) }
     var protein by remember(template?.id) { mutableStateOf(template?.proteinPerUnitG?.toString().orEmpty()) }
+    var nutritionBasis by remember(template?.id) { mutableStateOf<String?>(null) }
+    var showNutritionScanner by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
@@ -330,6 +353,12 @@ fun FoodTemplateEditorDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(calories, { calories = it }, label = { Text("단위당 칼로리") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
                     OutlinedTextField(protein, { protein = it }, label = { Text("단위당 단백질") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                }
+                OutlinedButton(onClick = { showNutritionScanner = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text("성분표에서 수치 가져오기")
+                }
+                nutritionBasis?.let { basis ->
+                    Text("읽은 성분표 기준: $basis", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 Text("등록할 때 수량은 입력하지 않아요. 기록할 때 먹은 양을 입력해요.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 if (errorMessage != null) Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -365,4 +394,17 @@ fun FoodTemplateEditorDialog(
             }
         },
     )
+
+    if (showNutritionScanner) {
+        NutritionLabelScannerDialog(
+            reviewNote = "성분표 기준과 기록 단위가 다르면 단위당 값으로 직접 환산해 주세요.",
+            onDismiss = { showNutritionScanner = false },
+            onApply = { values ->
+                calories = formatInputAmount(values.caloriesKcal)
+                protein = formatInputAmount(values.proteinG)
+                nutritionBasis = values.basisDescription ?: "확인되지 않음"
+                showNutritionScanner = false
+            },
+        )
+    }
 }

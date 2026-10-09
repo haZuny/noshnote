@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.hazuny.mealtracker.MealViewModel
 import com.hazuny.mealtracker.data.FoodTemplateEntity
 import com.hazuny.mealtracker.data.MealEntryEntity
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -292,6 +293,8 @@ private fun groupAdjacentEntries(entries: List<MealEntryEntity>): List<EntryGrou
 
 fun formatAmount(value: Double): String =
     if (value % 1.0 == 0.0) value.toLong().toString() else String.format(Locale.getDefault(), "%.1f", value)
+
+fun formatInputAmount(value: Double): String = BigDecimal.valueOf(value).stripTrailingZeros().toPlainString()
 
 fun inferMealTag(time: String): String {
     val parsed = runCatching { LocalTime.parse(time) }.getOrNull() ?: return "간식"
