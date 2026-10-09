@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import com.hazuny.mealtracker.MealViewModel
 import com.hazuny.mealtracker.data.FoodTemplateEntity
+import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
 
 @Composable
 fun SettingsScreen(
@@ -55,18 +57,22 @@ fun SettingsScreen(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            start = MealTrackerSpacing.screenHorizontal,
+            top = MealTrackerSpacing.screenTop,
+            end = MealTrackerSpacing.screenHorizontal,
+            bottom = MealTrackerSpacing.screenBottom,
+        ),
+        verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
     ) {
         item {
-            Column {
-                Text("설정", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("하루 목표와 내가 등록한 음식을 관리해요.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Column(Modifier.fillMaxWidth().padding(MealTrackerSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("일일 목표", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
@@ -114,15 +120,23 @@ fun SettingsScreen(
         }
         if (foodTemplates.isEmpty()) {
             item {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Text("등록한 음식이 아직 없어요. 바로 기록에는 음식 등록이 필요하지 않아요.", modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Card(
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                ) {
+                    Text("등록한 음식이 아직 없어요. 바로 기록에는 음식 등록이 필요하지 않아요.", modifier = Modifier.padding(MealTrackerSpacing.cardPadding), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         } else {
             items(foodTemplates, key = { it.id }) { template ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 12.dp),

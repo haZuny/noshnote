@@ -3,6 +3,7 @@ package com.hazuny.mealtracker.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,20 +19,27 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -40,11 +48,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.navigationBarsPadding
 import com.hazuny.mealtracker.data.MealEntryEntity
+import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     entries: List<MealEntryEntity>,
@@ -53,6 +64,9 @@ fun CalendarScreen(
     onSelectDate: (String) -> Unit,
 ) {
     var monthKey by rememberSaveable { mutableStateOf(LocalDate.now().withDayOfMonth(1).toString()) }
+    var showMonthPicker by rememberSaveable { mutableStateOf(false) }
+    var pickerYear by rememberSaveable { mutableStateOf(LocalDate.now().year) }
+    var pickerMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
     val month = LocalDate.parse(monthKey)
     val today = LocalDate.now()
     val datesWithRecords = remember(entries) { entries.map { it.dateKey }.toSet() }
@@ -80,7 +94,7 @@ fun CalendarScreen(
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compactWidth = maxWidth < 360.dp
-        val horizontalPadding = if (compactWidth) 12.dp else 18.dp
+        val horizontalPadding = if (compactWidth) 12.dp else MealTrackerSpacing.screenHorizontal
         val gridGap = if (compactWidth || fontScale >= 1.3f) 3.dp else 5.dp
         val calendarWidth = (maxWidth - horizontalPadding * 2).coerceAtMost(420.dp)
         val cellWidth = (calendarWidth - gridGap * 6) / 7
@@ -92,21 +106,14 @@ fun CalendarScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = horizontalPadding, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = horizontalPadding, vertical = MealTrackerSpacing.screenTop),
+            verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("달력", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(
-                    "기록한 날짜와 연속 기록을 확인해요.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 BoxWithConstraints(
                     modifier = Modifier
@@ -143,15 +150,26 @@ fun CalendarScreen(
                 ) {
                     Text("‹", fontSize = 28.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Text(
-                    month.format(DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREAN)),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                BoxWithConstraints(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    TextButton(
+                        onClick = {
+                            pickerYear = month.year
+                            pickerMonth = month.monthValue
+                            showMonthPicker = true
+                        },
+                        modifier = Modifier.semantics { contentDescription = "월 선택" },
+                    ) {
+                        Text(
+                            month.format(DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREAN)),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text("⌄", modifier = Modifier.padding(start = 6.dp), fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
                 IconButton(
                     onClick = { monthKey = month.plusMonths(1).toString() },
                     modifier = Modifier
@@ -162,51 +180,193 @@ fun CalendarScreen(
                 }
             }
 
-            Row(
+            Card(
                 modifier = Modifier.width(calendarWidth).align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.spacedBy(gridGap),
-                verticalAlignment = Alignment.CenterVertically,
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
-                listOf("일", "월", "화", "수", "목", "금", "토").forEach { label ->
-                    Text(
-                        label,
-                        modifier = Modifier.weight(1f).padding(vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier.width(calendarWidth).align(Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(gridGap),
-            ) {
-                calendarWeeks.forEach { week ->
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(gridGap),
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(gridGap),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        week.forEach { date ->
-                            if (date == null) {
-                                Spacer(Modifier.weight(1f).height(cellHeight))
-                            } else {
-                                CalendarDay(
-                                    date = date,
-                                    entriesForDate = entriesByDate[date.toString()].orEmpty(),
-                                    goalCalories = goalCalories,
-                                    goalProtein = goalProtein,
-                                    modifier = Modifier.weight(1f).height(cellHeight),
-                                    dayNumberFontSize = dayNumberFontSize,
-                                    onClick = { onSelectDate(date.toString()) },
-                                )
+                        listOf("일", "월", "화", "수", "목", "금", "토").forEach { label ->
+                            Text(
+                                label,
+                                modifier = Modifier.weight(1f).padding(vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
+                        calendarWeeks.forEach { week ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(gridGap),
+                            ) {
+                                week.forEach { date ->
+                                    if (date == null) {
+                                        Spacer(Modifier.weight(1f).height(cellHeight))
+                                    } else {
+                                        CalendarDay(
+                                            date = date,
+                                            entriesForDate = entriesByDate[date.toString()].orEmpty(),
+                                            goalCalories = goalCalories,
+                                            goalProtein = goalProtein,
+                                            modifier = Modifier.weight(1f).height(cellHeight),
+                                            dayNumberFontSize = dayNumberFontSize,
+                                            onClick = { onSelectDate(date.toString()) },
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-
         }
+    }
+
+    if (showMonthPicker) {
+        val minimumYear = 1900
+        val maximumYear = 2100
+        ModalBottomSheet(
+            onDismissRequest = { showMonthPicker = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("월 선택", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    WheelPickerColumn(
+                        value = pickerYear,
+                        range = minimumYear..maximumYear,
+                        wrap = false,
+                        label = { "${it}년" },
+                        onValueChange = { pickerYear = it },
+                        modifier = Modifier.weight(1f),
+                    )
+                    WheelPickerColumn(
+                        value = pickerMonth,
+                        range = 1..12,
+                        wrap = true,
+                        label = { "${it}월" },
+                        onValueChange = { pickerMonth = it },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    TextButton(
+                        onClick = { showMonthPicker = false },
+                        modifier = Modifier.weight(1f),
+                    ) { Text("취소") }
+                    Button(
+                        onClick = {
+                            monthKey = LocalDate.of(pickerYear.coerceIn(minimumYear, maximumYear), pickerMonth, 1).toString()
+                            showMonthPicker = false
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) { Text("이 달 보기") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WheelPickerColumn(
+    value: Int,
+    range: IntRange,
+    wrap: Boolean,
+    label: (Int) -> String,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dragThreshold = with(LocalDensity.current) { 30.dp.toPx() }
+    val latestValue = rememberUpdatedState(value)
+    Column(
+        modifier = modifier
+            .height(180.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .pointerInput(range.first, range.last, wrap) {
+                var currentValue = value
+                var dragDistance = 0f
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        currentValue = latestValue.value
+                        dragDistance = 0f
+                    },
+                    onDragEnd = { dragDistance = 0f },
+                    onVerticalDrag = { change, dragAmount ->
+                        dragDistance += dragAmount
+                        while (dragDistance <= -dragThreshold) {
+                            currentValue = nextWheelValue(currentValue, 1, range, wrap)
+                            onValueChange(currentValue)
+                            dragDistance += dragThreshold
+                        }
+                        while (dragDistance >= dragThreshold) {
+                            currentValue = nextWheelValue(currentValue, -1, range, wrap)
+                            onValueChange(currentValue)
+                            dragDistance -= dragThreshold
+                        }
+                    },
+                )
+            },
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        (-2..2).forEach { offset ->
+            val itemValue = nextWheelValue(value, offset, range, wrap)
+            val selected = offset == 0
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                    .clickable(enabled = !selected) { onValueChange(itemValue) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    label(itemValue),
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (kotlin.math.abs(offset) == 1) 0.72f else 0.42f),
+                    style = if (selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    maxLines = 1,
+                    softWrap = false,
+                )
+            }
+        }
+    }
+}
+
+private fun nextWheelValue(value: Int, delta: Int, range: IntRange, wrap: Boolean): Int {
+    val next = value + delta
+    return when {
+        wrap && next > range.last -> range.first
+        wrap && next < range.first -> range.last
+        else -> next.coerceIn(range.first, range.last)
     }
 }
 

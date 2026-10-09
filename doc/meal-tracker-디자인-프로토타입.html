@@ -24,9 +24,9 @@
     body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
-    .app { max-width: 480px; min-height: 100vh; margin: 0 auto; padding: 24px 18px 104px; }
-    .topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-    .brand { font-size: 19px; font-weight: 780; letter-spacing: -.045em; }
+    .app { max-width: 480px; min-height: 100vh; margin: 0 auto; padding: 0 18px 104px; }
+    .topline { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: center; min-height: 60px; margin: 0 -18px 12px; padding: 10px 18px; background: rgba(247,250,252,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(14px); text-align: center; }
+    .brand { font-size: 20px; font-weight: 750; letter-spacing: -.035em; }
     .eyebrow { color: var(--muted); font-size: 12px; }
     .screen { display: none; }
     .screen.active { display: block; }
@@ -36,11 +36,13 @@
     .subtle { color: var(--muted); font-size: 13px; }
     .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 26px 0 12px; }
     .home-actions { display: flex; gap: 8px; margin: 0 0 12px; }
-    .home-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; height: 48px; padding: 0 8px; border: 1px solid #34566c; border-radius: 13px; color: white; background: #3c627a; font-size: 13px; font-weight: 700; box-shadow: 0 3px 7px rgba(31,62,81,.2), 0 1px 2px rgba(28,53,68,.14); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
+    .home-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; height: 50px; padding: 0 8px; border: 1px solid #34566c; border-radius: var(--radius); color: white; background: #3c627a; font-size: 13px; font-weight: 700; box-shadow: 0 2px 5px rgba(31,62,81,.16); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
     .home-actions button:active { background: #31566e; transform: translateY(1px); box-shadow: 0 1px 3px rgba(31,62,81,.18); }
     .action-icon { display: inline-grid; place-items: center; color: white; font-size: 17px; font-weight: 700; line-height: 1; }
     .date-switch { display: flex; align-items: center; gap: 8px; margin: 17px 0; }
     .date-switch strong { min-width: 112px; text-align: center; font-size: 14px; }
+    .date-switch .icon-btn { width: 48px; height: 48px; color: var(--blue); font-size: 29px; }
+    .date-switch #go-today { color: white; background: var(--blue); font-weight: 700; }
     .icon-btn, .secondary, .primary, .danger-btn { border: 0; border-radius: 12px; min-height: 42px; padding: 0 14px; }
     .icon-btn { width: 42px; padding: 0; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: 18px; }
     .primary { color: white; background: var(--green); font-weight: 650; box-shadow: 0 3px 8px rgba(56,103,132,.2), 0 1px 2px rgba(38,69,88,.1); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
@@ -50,7 +52,7 @@
     .danger-btn { color: var(--danger); background: #fbefee; }
     .wide { width: 100%; }
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 17px; box-shadow: none; }
-    .summary { display: grid; gap: 16px; padding: 18px; background: linear-gradient(145deg, #ffffff 0%, #f7fcff 100%); border: 2px solid #64b3d3; box-shadow: 0 4px 14px rgba(44,146,192,.11); }
+    .summary { display: grid; gap: 16px; padding: 17px; background: var(--surface); border: 1px solid #9bcde0; box-shadow: none; }
     .summary-title { margin-bottom: 1px; font-size: 14px; font-weight: 700; }
     .metric-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
     .metric-name { font-size: 13px; font-weight: 650; color: #326f8b; }
@@ -88,8 +90,8 @@
     .nav button { border: 0; background: transparent; color: #7a8790; padding: 7px 3px 4px; font-size: 11px; }
     .nav button span { display: block; font-size: 18px; margin-bottom: 2px; }
     .nav button.active { color: var(--green); font-weight: 700; }
-    .toolbar { display: flex; align-items: center; justify-content: space-between; margin: 22px 0 14px; }
-    .month-label { font-weight: 700; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; }
+    .month-label { min-height: 40px; border: 0; padding: 8px 12px; border-radius: 12px; background: transparent; color: var(--ink); font: inherit; font-weight: 750; text-align: center; }
     .calendar-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0 20px; padding: 14px 16px; background: white; border: 1px solid var(--line); border-radius: 14px; }
     .calendar-stat { display: grid; gap: 3px; }
     .calendar-stat + .calendar-stat { padding-left: 14px; border-left: 1px solid var(--line); }
@@ -108,7 +110,8 @@
     .day.outside { opacity: .38; }
     .day.selected { outline: 2px solid #155f82; outline-offset: 1px; }
     .day.today { border-color: #287fa5; }
-    .settings-group { margin-top: 21px; }
+    .settings-group { margin-top: 12px; }
+    .calendar-surface { padding: 10px; }
     .settings-group h2 { margin-bottom: 10px; }
     .field { display: grid; gap: 6px; margin: 12px 0; }
     .field label { color: #52616b; font-size: 12px; font-weight: 600; }
@@ -137,10 +140,9 @@
 </head>
 <body>
   <main class="app">
-    <div class="topline"><div class="brand">meal-tracker</div></div>
+    <header class="topline"><div class="brand" id="app-bar-title">오늘 기록</div></header>
 
-    <section id="home" class="screen active" aria-labelledby="home-title">
-      <div><h1 id="home-title">오늘 기록</h1><p class="subtle">먹은 것을 간단히 기록해요.</p></div>
+    <section id="home" class="screen active" aria-labelledby="app-bar-title">
       <div class="date-switch"><button class="icon-btn" id="prev-day" aria-label="이전 날짜">‹</button><strong id="home-date"></strong><button class="icon-btn" id="next-day" aria-label="다음 날짜">›</button><button class="secondary" id="go-today" style="margin-left:auto;min-height:36px;padding:0 11px;font-size:12px">오늘</button></div>
       <div class="card summary" id="summary"></div>
       <div class="section-head"><h2>기록</h2><span class="subtle" id="day-total"></span></div>
@@ -151,15 +153,13 @@
       <div id="entries"></div>
     </section>
 
-    <section id="calendar-screen" class="screen" aria-labelledby="calendar-title">
-      <h1 id="calendar-title">달력</h1><p class="subtle">날짜를 눌러 식단을 확인해요.</p>
+    <section id="calendar-screen" class="screen" aria-labelledby="app-bar-title">
       <div class="calendar-stats" id="calendar-stats"></div>
-      <div class="toolbar"><button class="icon-btn" id="prev-month" aria-label="이전 달">‹</button><div class="month-label" id="month-label"></div><button class="icon-btn" id="next-month" aria-label="다음 달">›</button></div>
-      <div id="calendar" class="calendar"></div>
+      <div class="toolbar"><button class="icon-btn" id="prev-month" aria-label="이전 달">‹</button><button class="month-label" id="month-label" aria-label="월 선택"></button><button class="icon-btn" id="next-month" aria-label="다음 달">›</button></div>
+      <div class="card calendar-surface"><div id="calendar" class="calendar"></div></div>
     </section>
 
-    <section id="settings" class="screen" aria-labelledby="settings-title">
-      <h1 id="settings-title">설정</h1><p class="subtle">하루 목표와 내가 등록한 음식을 관리해요.</p>
+    <section id="settings" class="screen" aria-labelledby="app-bar-title">
       <form id="goal-form" class="card settings-group">
         <h2>일일 목표</h2>
         <div class="input-row">
@@ -218,7 +218,7 @@
       function entriesFor(key) { return state.entries.filter(entry => entry.date === key); }
       function totalsFor(key) { return entriesFor(key).reduce((sum, entry) => ({ kcal: sum.kcal + entry.kcal, protein: sum.protein + entry.protein }), { kcal: 0, protein: 0 }); }
 
-      function render() { renderHome(); renderCalendar(); renderSettings(); }
+      function render() { renderHome(); renderCalendar(); renderSettings(); updateAppBarTitle(); }
       function renderHome() {
         document.getElementById('home-date').textContent = dateLabel(selectedDate);
         const totals = totalsFor(selectedDate);
@@ -247,7 +247,8 @@
       }
       function renderCalendar() {
         const y = shownMonth.getFullYear(), m = shownMonth.getMonth();
-        document.getElementById('month-label').textContent = `${y}년 ${m+1}월`;
+        const monthPicker = document.getElementById('month-label');
+        monthPicker.textContent = `${y}년 ${m+1}월　⌄`;
         const monthPrefix = `${y}-${String(m+1).padStart(2,'0')}-`;
         const loggedDays = new Set(state.entries.filter(entry => entry.date.startsWith(monthPrefix)).map(entry => entry.date)).size;
         const hasLoggedToday = entriesFor(today).length > 0;
@@ -291,6 +292,12 @@
       function showScreen(id) {
         document.querySelectorAll('.screen').forEach(screen => screen.classList.toggle('active', screen.id === id));
         document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.screen === id));
+        updateAppBarTitle();
+      }
+      function updateAppBarTitle() {
+        const activeId = document.querySelector('.screen.active')?.id || 'home';
+        const title = activeId === 'calendar-screen' ? '달력' : activeId === 'settings' ? '설정' : selectedDate === today ? '오늘 기록' : `${Number(selectedDate.slice(5,7))}월 ${Number(selectedDate.slice(8,10))}일 기록`;
+        document.getElementById('app-bar-title').textContent = title;
       }
       function openModal(html) { document.getElementById('sheet').innerHTML = html; document.getElementById('modal').classList.add('open'); }
       function closeModal() { document.getElementById('modal').classList.remove('open'); }
@@ -409,6 +416,37 @@
       document.getElementById('go-today').onclick = () => { selectedDate = today; render(); };
       document.getElementById('prev-month').onclick = () => { shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth()-1, 1); renderCalendar(); };
       document.getElementById('next-month').onclick = () => { shownMonth = new Date(shownMonth.getFullYear(), shownMonth.getMonth()+1, 1); renderCalendar(); };
+      document.getElementById('month-label').onclick = () => {
+        const years = Array.from({length:201}, (_, i) => i + 1900);
+        const yearOptions = years.map(year => `<option value="${year}">${year}년</option>`).join('');
+        const monthOptions = Array.from({length:12}, (_, i) => `<option value="${i+1}">${i+1}월</option>`).join('');
+        openModal(`<div class="sheet-head"><h2 id="modal-title">월 선택</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><div class="input-row"><div class="field"><label for="picker-year">연도</label><select id="picker-year">${yearOptions}</select></div><div class="field"><label for="picker-month">월</label><select id="picker-month">${monthOptions}</select></div></div><div class="sheet-actions"><button class="secondary" data-close>취소</button><button class="primary" id="apply-month">이 달 보기</button></div>`);
+        document.getElementById('picker-year').value = String(shownMonth.getFullYear());
+        document.getElementById('picker-month').value = String(shownMonth.getMonth()+1);
+        document.querySelectorAll('[data-close]').forEach(button => button.onclick = closeModal);
+        document.getElementById('apply-month').onclick = () => {
+          const year = Number(document.getElementById('picker-year').value);
+          const month = Number(document.getElementById('picker-month').value);
+          shownMonth = new Date(year, month-1, 1);
+          closeModal();
+          renderCalendar();
+        };
+      };
+      let swipeStartX = null;
+      document.querySelector('.app').addEventListener('touchstart', event => {
+        if (event.target.closest('button,input,select,textarea,.nav,.modal-backdrop')) { swipeStartX = null; return; }
+        swipeStartX = event.changedTouches[0].clientX;
+      }, { passive: true });
+      document.querySelector('.app').addEventListener('touchend', event => {
+        if (swipeStartX == null) return;
+        const delta = event.changedTouches[0].clientX - swipeStartX;
+        swipeStartX = null;
+        if (Math.abs(delta) < 60) return;
+        const activeId = document.querySelector('.screen.active')?.id || 'home';
+        const routes = ['home','calendar-screen','settings'];
+        const next = routes[routes.indexOf(activeId) + (delta < 0 ? 1 : -1)];
+        if (next) { showScreen(next); render(); }
+      }, { passive: true });
       document.getElementById('goal-form').onsubmit = event => {
         event.preventDefault();
         const kcal = Number(document.getElementById('goal-kcal').value), protein = Number(document.getElementById('goal-protein').value);

@@ -17,13 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.hazuny.mealtracker.MealViewModel
 import com.hazuny.mealtracker.data.FoodTemplateEntity
 import com.hazuny.mealtracker.data.MealEntryEntity
+import com.hazuny.mealtracker.ui.theme.MealTrackerSpacing
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -75,30 +76,42 @@ fun HomeScreen(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            start = MealTrackerSpacing.screenHorizontal,
+            end = MealTrackerSpacing.screenHorizontal,
+            top = MealTrackerSpacing.screenTop,
+            bottom = MealTrackerSpacing.screenBottom,
+        ),
+        verticalArrangement = Arrangement.spacedBy(MealTrackerSpacing.section),
     ) {
-        item {
-            Column {
-                Text(if (date == LocalDate.now()) "오늘 기록" else "${date.monthValue}월 ${date.dayOfMonth}일 기록", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Text("먹은 것을 간단히 기록해요.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                TextButton(onClick = { onDateChange(date.minusDays(1).toString()) }) { Text("‹") }
+                IconButton(
+                    onClick = { onDateChange(date.minusDays(1).toString()) },
+                    modifier = Modifier.size(48.dp),
+                ) { Text("‹", fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center) }
                 Text(
                     text = date.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium,
                 )
-                TextButton(onClick = { onDateChange(date.plusDays(1).toString()) }) { Text("›") }
-                TextButton(onClick = { onDateChange(LocalDate.now().toString()) }) { Text("오늘") }
+                IconButton(
+                    onClick = { onDateChange(date.plusDays(1).toString()) },
+                    modifier = Modifier.size(48.dp),
+                ) { Text("›", fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center) }
+                Button(
+                    onClick = { onDateChange(LocalDate.now().toString()) },
+                    modifier = Modifier.height(40.dp),
+                    shape = MaterialTheme.shapes.small,
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 13.dp, vertical = 0.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                ) { Text("오늘", fontWeight = FontWeight.Bold) }
             }
         }
         item {
@@ -121,22 +134,27 @@ fun HomeScreen(
                 Button(
                     onClick = { editingEntry = null; showRecordDialog = true },
                     modifier = Modifier.weight(1f).height(50.dp),
-                    shape = RoundedCornerShape(13.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C627A)),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
                 ) { Text("＋  바로 기록", fontWeight = FontWeight.SemiBold) }
                 Button(
                     onClick = { showFoodPicker = true },
                     modifier = Modifier.weight(1f).height(50.dp),
-                    shape = RoundedCornerShape(13.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C627A)),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
                 ) { Text("≡  음식 불러오기", fontWeight = FontWeight.SemiBold) }
             }
         }
         if (dateEntries.isEmpty()) {
             item {
-                Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                Card(
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                ) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 25.dp, horizontal = 18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -154,17 +172,18 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.size(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
                             Spacer(Modifier.width(7.dp))
-                            Text(group.tag, color = Color(0xFF326F8B), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(group.tag, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = .65f)),
+                            shape = MaterialTheme.shapes.medium,
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
                             group.items.forEachIndexed { index, entry ->
                                 EntryRow(entry = entry, onClick = { editingEntry = entry; showRecordDialog = true })
-                                if (index != group.items.lastIndex) HorizontalDivider(color = Color(0xFFE5E9EC), thickness = .7.dp)
+                                if (index != group.items.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .65f), thickness = .7.dp)
                             }
                         }
                     }
@@ -229,15 +248,15 @@ fun HomeScreen(
 private fun DailySummaryCard(calories: Double, protein: Double, goalCalories: Double?, goalProtein: Double?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(17.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFCFEFF)),
-        border = BorderStroke(2.dp, Color(0xFF64B3D3)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = .55f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(modifier = Modifier.padding(MealTrackerSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text("오늘 섭취 현황", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            NutrientProgress("칼로리", calories, goalCalories, "kcal", Color(0xFF329AC6))
-            NutrientProgress("단백질", protein, goalProtein, "g", Color(0xFF78B7D4))
+            NutrientProgress("칼로리", calories, goalCalories, "kcal", MaterialTheme.colorScheme.primary)
+            NutrientProgress("단백질", protein, goalProtein, "g", MaterialTheme.colorScheme.secondary)
         }
     }
 }
@@ -248,10 +267,10 @@ private fun NutrientProgress(label: String, value: Double, goal: Double?, unit: 
     val progress = if (goal != null && goal > 0) (value / goal).coerceIn(0.0, 1.0).toFloat() else 0f
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(label, modifier = Modifier.weight(1f), color = Color(0xFF326F8B), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
             Text("${formatAmount(value)} / $targetText${if (goal != null) " $unit" else ""}", fontWeight = FontWeight.Bold)
         }
-        Box(Modifier.fillMaxWidth().height(7.dp).clip(CircleShape).background(Color(0xFFDCEBF2))) {
+        Box(Modifier.fillMaxWidth().height(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer)) {
             Box(Modifier.fillMaxWidth(progress).height(7.dp).clip(CircleShape).background(color))
         }
         if (goal != null) {
