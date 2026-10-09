@@ -14,13 +14,14 @@
 |---|---|---|
 | 언어 | Kotlin | Android 앱 구현 언어 |
 | UI | Jetpack Compose + Material 3 | 네이티브 화면과 앱 테마 구현 |
+| UI 문자열·언어 | Android string resources (`values/`, `values-<locale>/`) | 한국어 기본 리소스, 영어·중국어(간체)·일본어·프랑스어·스페인어·러시아어·독일어·포르투갈어(브라질)·인도네시아어 번역. 시스템 언어에 맞춰 자동 선택하고 앱 내 언어 선택은 제공하지 않음 |
 | 화면 이동 | Navigation Compose | 홈·달력·설정 3개 최상위 화면 이동 |
 | 앱 구조 | UI/Data 계층, 화면별 ViewModel, Repository | 단방향 UI 상태 흐름을 사용하고 ViewModel 상태는 `StateFlow`로 제공 |
 | 비동기·반응형 데이터 | Kotlin Coroutines + Flow | 데이터 조회 및 UI 상태 전달 |
 | 구조화된 로컬 데이터 | Room (SQLite 기반) | 식단 기록, 음식 템플릿, 프로필, 날짜별 목표 이력 저장 |
 | 간단한 앱 설정 | Preferences DataStore | 온보딩 완료 등 작은 키-값 설정 저장. 식단 데이터나 목표 이력에는 사용하지 않음 |
 | 카메라 | CameraX | 영양성분표를 실시간 프레임으로 가져오기 |
-| 텍스트 인식 | ML Kit Text Recognition 한국어 모델 | 기기 내부에서 한글·숫자 텍스트 인식 |
+| 텍스트 인식 | ML Kit Text Recognition 한국어 모델 | 기기 내부에서 한국어와 라틴 문자(영어 등), 숫자 텍스트 인식 |
 | 의존성 주입 | 초기에는 수동 주입 | 모듈과 객체 수가 늘어 복잡도가 생길 때 DI 라이브러리 도입을 재검토 |
 
 ### 2.1 Android SDK 기준
@@ -91,6 +92,7 @@ Room DAO ── Room Database (기기 내부 SQLite)
 
 - OCR은 온디바이스 처리로 구현하고, 영양성분표 이미지를 외부 서버로 전송하지 않는다.
 - 한국어 모델을 앱에 포함해 첫 사용 때 모델 다운로드를 요구하지 않는 구성을 기본으로 한다. 앱 용량 증가를 감수한다.
+- `KoreanTextRecognizerOptions`는 한국어와 라틴 문자를 함께 인식한다. 따라서 영어 라벨을 위해 별도 Latin recognizer를 병렬 실행하지 않는다. 라벨 숫자 추출 규칙은 한국어·영어 영양 표시를 지원한다. 중국어·일본어·프랑스어 등 UI 지원은 OCR 라벨 파서의 해당 언어 지원을 뜻하지 않는다.
 - 카메라 프레임 분석 중에는 최신 프레임 위주로 처리하고 중복 분석을 제한해 UI 멈춤과 불필요한 작업을 줄인다.
 - CameraX 분석 해상도는 세로 화면에서 1080×1920을 요청해 작은 성분표 글자를 더 확보한다. CameraX는 기기가 지원하는 가까운 해상도로 대체할 수 있으며, 실제 기기에서 처리 속도와 발열을 확인해 조정한다.
 - 미리보기에서 사용자가 탭한 위치에 자동 초점·노출 측광을 요청한다. 프레임의 밝은 픽셀 비율과 라플라시안 선명도는 안내용 품질 신호로 사용한다. 전체 프레임 OCR에서 성분표 제목·영양소 라벨의 텍스트 박스를 찾으면 주변을 잘라 확대해 2차 OCR한다. 첫 OCR에서 단백질 라벨 위치까지 찾은 경우에는 해당 행을 우선 잘라 더 크게 읽고, 못 찾으면 성분표 영역 전체를 확대한다. 성분표 영역을 찾은 시점부터 스캔 가이드를 초록색으로 표시한다. 값이 누락되거나 품질 신호가 낮으면 반사·접힘·가림 가능성을 확인하도록 안내한다. 이는 접힘 자체를 판별하는 기능이 아니며, 포장지 접힘이나 반사 영역을 복원하지 않는다.
@@ -109,18 +111,14 @@ Room DAO ── Room Database (기기 내부 SQLite)
 - 카메라 권한은 OCR 진입 시점에 요청하고, 권한이 없어도 직접 기록과 음식 템플릿 수동 입력을 사용할 수 있게 한다.
 - 신체 정보와 식단 기록을 광고·분석 목적의 외부 서비스로 전송하지 않는다.
 
-## 7. 현재 프로젝트에서 필요한 전환
+## 7. 현재 프로젝트 적용 상태
 
-현재 저장소에는 Android 애플리케이션 뼈대가 있으며 `compileSdk`/`targetSdk`는 37, `minSdk`는 24다. Gradle 설정은 AppCompat/Views와 Java 11을 사용하고 실제 Kotlin/Compose 화면은 아직 없다.
+저장소에는 Kotlin·Jetpack Compose 기반 Android 앱이 구현되어 있다. 프로젝트는 `compileSdk`/`targetSdk` 37, `minSdk` 26을 사용하며, 화면 이동, Room, CameraX, ML Kit 의존성이 구성되어 있다.
 
-구현을 시작할 때 다음 작업을 반영한다.
-
-- Kotlin 및 Compose 플러그인과 Compose BOM/Material 3 의존성 구성
-- `minSdk`를 26으로 조정하고 Kotlin/JVM 및 Android Gradle Plugin 호환 설정 정리
-- Navigation Compose, Lifecycle ViewModel/Compose 연동, Coroutines/Flow 의존성 구성
-- Room과 KSP 구성 및 데이터베이스 마이그레이션 정책 마련
-- Preferences DataStore 구성
-- OCR 단계에서 CameraX와 한국어 ML Kit 텍스트 인식 의존성 추가
+- UI 문자열은 `res/values/strings.xml`의 한국어 기본 리소스와 `values-en`, `values-zh-rCN`, `values-ja`, `values-fr`, `values-es`, `values-ru`, `values-de`, `values-pt-rBR`, `values-in` 번역 리소스로 관리한다.
+- Android의 기본 리소스 선택 규칙에 따라 시스템 언어와 일치하는 리소스를 자동 선택한다. 별도 앱 언어 선택 메뉴나 앱별 언어 오버라이드는 두지 않으며, 미지원 언어는 한국어 기본값을 사용한다.
+- 식사 태그는 기존 Room 데이터에 저장된 한국어 키를 유지하고, 화면에 표시할 때만 현재 언어로 변환한다. 사용자가 직접 입력한 음식명과 단위는 입력한 값을 그대로 보존한다.
+- OCR은 한국어와 라틴 문자를 인식한다. 현재 추출 규칙은 한국어·영어 영양 라벨을 대상으로 한다. UI 번역이 해당 언어의 OCR 추출 지원을 의미하지 않는다.
 
 ## 8. 후속 결정
 

@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -41,17 +40,19 @@ import androidx.navigation.compose.rememberNavController
 import com.hazuny.noshnote.MealViewModel
 import com.hazuny.noshnote.R
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private data class MainDestination(
     val route: String,
-    val label: String,
+    val labelRes: Int,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
 )
 
 private val mainDestinations = listOf(
-    MainDestination("home", "홈", Icons.Default.Home),
-    MainDestination("calendar", "달력", Icons.Default.DateRange),
-    MainDestination("settings", "설정", Icons.Default.Settings),
+    MainDestination("home", R.string.nav_home, Icons.Default.Home),
+    MainDestination("calendar", R.string.nav_calendar, Icons.Default.DateRange),
+    MainDestination("settings", R.string.nav_settings, Icons.Default.Settings),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +67,11 @@ fun NoshNoteApp(viewModel: MealViewModel) {
     val goal by viewModel.goal.collectAsStateWithLifecycle()
     val swipeThresholdPx = with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
     val title = when (currentRoute) {
-        "calendar" -> "달력"
-        "settings" -> "설정"
+        "calendar" -> uiText(R.string.nav_calendar)
+        "settings" -> uiText(R.string.nav_settings)
         else -> LocalDate.parse(selectedDateKey).let { date ->
-            if (date == LocalDate.now()) "오늘 기록" else "${date.monthValue}월 ${date.dayOfMonth}일 기록"
+            if (date == LocalDate.now()) uiText(R.string.title_today)
+            else uiText(R.string.title_date_record, date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault())))
         }
     }
     fun navigateToDestination(route: String) {
@@ -95,7 +97,7 @@ fun NoshNoteApp(viewModel: MealViewModel) {
                             contentDescription = null,
                             modifier = Modifier.size(28.dp),
                         )
-                        Text(
+                        AutoFitText(
                             text = "NoshNote",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -104,7 +106,7 @@ fun NoshNoteApp(viewModel: MealViewModel) {
                         )
                     }
                 },
-                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold) },
+                title = { AutoFitText(title, maxLines = 1, fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -127,7 +129,7 @@ fun NoshNoteApp(viewModel: MealViewModel) {
                                 modifier = Modifier.size(22.dp),
                             )
                         },
-                        label = { Text(destination.label) },
+                        label = { AutoFitText(uiText(destination.labelRes), maxLines = 1) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,

@@ -1,5 +1,7 @@
 package com.hazuny.noshnote.ui
 
+import com.hazuny.noshnote.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,7 @@ fun RecordEditorDialog(
     onSave: (RecordDraft, Boolean) -> Unit,
     onDelete: (MealEntryEntity) -> Unit,
 ) {
+    val context = LocalContext.current
     val initialTime = entry?.let {
         Instant.ofEpochMilli(it.eatenAtEpochMillis)
             .atZone(ZoneId.systemDefault())
@@ -65,7 +69,8 @@ fun RecordEditorDialog(
     } ?: LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     var foodName by remember(entry?.id) { mutableStateOf(entry?.foodNameSnapshot.orEmpty()) }
     var quantity by remember(entry?.id) { mutableStateOf(entry?.quantity?.toString() ?: "1") }
-    var unit by remember(entry?.id) { mutableStateOf(entry?.unitSnapshot ?: "인분") }
+    val defaultServingUnit = uiText(R.string.unit_serving)
+    var unit by remember(entry?.id) { mutableStateOf(entry?.unitSnapshot ?: defaultServingUnit) }
     var calories by remember(entry?.id) { mutableStateOf(entry?.caloriesKcalSnapshot?.toString().orEmpty()) }
     var protein by remember(entry?.id) { mutableStateOf(entry?.proteinGSnapshot?.toString().orEmpty()) }
     var time by remember(entry?.id) { mutableStateOf(initialTime) }
@@ -80,30 +85,30 @@ fun RecordEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (entry == null) "바로 기록" else "기록 수정", fontWeight = FontWeight.Bold) },
+        title = { AutoFitText(if (entry == null) uiText(R.string.record_now) else uiText(R.string.edit_record), fontWeight = FontWeight.Bold) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedTextField(foodName, { foodName = it }, label = { Text("음식 이름") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(foodName, { foodName = it }, label = { AutoFitText(uiText(R.string.food_name), maxLines = 1) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         quantity,
                         { quantity = it },
-                        label = { Text("이번에 먹은 양") },
+                        label = { AutoFitText(uiText(R.string.food_quantity), maxLines = 1) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
-                    OutlinedTextField(unit, { unit = it }, label = { Text("단위") }, singleLine = true, modifier = Modifier.weight(1f))
+                    OutlinedTextField(unit, { unit = it }, label = { AutoFitText(uiText(R.string.unit_label), maxLines = 1) }, singleLine = true, modifier = Modifier.weight(1f))
                 }
-                Text("영양값은 이번에 먹은 전체 양 기준이에요.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                AutoFitText(uiText(R.string.nutrition_total_amount), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         calories,
                         { calories = it },
-                        label = { Text("칼로리 (kcal)") },
+                        label = { AutoFitText(uiText(R.string.calories_protein_unit), maxLines = 1) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
@@ -111,17 +116,17 @@ fun RecordEditorDialog(
                     OutlinedTextField(
                         protein,
                         { protein = it },
-                        label = { Text("단백질 (g)") },
+                        label = { AutoFitText(uiText(R.string.protein_unit), maxLines = 1) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                 }
                 OutlinedButton(onClick = { showNutritionScanner = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text("성분표에서 값 가져오기")
+                    AutoFitText(uiText(R.string.nutrition_from_label))
                 }
                 nutritionBasis?.let { basis ->
-                    Text("읽은 성분표 기준: $basis", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    AutoFitText(uiText(R.string.nutrition_basis, basis), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
@@ -130,20 +135,20 @@ fun RecordEditorDialog(
                             time = it
                             if (!tagManual) mealTag = inferMealTag(it)
                         },
-                        label = { Text("먹은 시간") },
+                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("식사 태그", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        AutoFitText(uiText(R.string.meal_tag), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(4.dp))
                         OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) {
-                            Text(mealTag.ifBlank { "태그 없음" })
+                            AutoFitText(mealTagText(mealTag), maxLines = 1)
                         }
                         DropdownMenu(expanded = tagMenuExpanded, onDismissRequest = { tagMenuExpanded = false }) {
                             tags.forEach { tag ->
                                 DropdownMenuItem(
-                                    text = { Text(tag) },
+                                    text = { AutoFitText(mealTagText(tag), maxLines = 1) },
                                     onClick = {
                                         mealTag = if (tag == "태그 없음") "" else tag
                                         tagManual = true
@@ -157,10 +162,10 @@ fun RecordEditorDialog(
                 if (entry == null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = saveTemplate, onCheckedChange = { saveTemplate = it })
-                        Text("다음에도 쓰도록 음식 목록에 저장", style = MaterialTheme.typography.bodySmall)
+                        AutoFitText(uiText(R.string.save_as_food), style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                if (errorMessage != null) Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                if (errorMessage != null) AutoFitText(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {
@@ -170,12 +175,12 @@ fun RecordEditorDialog(
                 val parsedProtein = protein.toDoubleOrNull()
                 val parsedTime = runCatching { LocalTime.parse(time) }.getOrNull()
                 errorMessage = when {
-                    foodName.isBlank() -> "음식 이름을 입력해 주세요."
-                    unit.isBlank() -> "단위를 입력해 주세요."
-                    parsedQuantity == null || parsedQuantity <= 0 -> "먹은 양을 확인해 주세요."
-                    parsedCalories == null || parsedCalories < 0 -> "칼로리를 확인해 주세요."
-                    parsedProtein == null || parsedProtein < 0 -> "단백질을 확인해 주세요."
-                    parsedTime == null -> "시간은 24시간 형식으로 입력해 주세요."
+                    foodName.isBlank() -> context.getString(R.string.food_name_required)
+                    unit.isBlank() -> context.getString(R.string.unit_required)
+                    parsedQuantity == null || parsedQuantity <= 0 -> context.getString(R.string.quantity_invalid)
+                    parsedCalories == null || parsedCalories < 0 -> context.getString(R.string.calories_invalid)
+                    parsedProtein == null || parsedProtein < 0 -> context.getString(R.string.protein_invalid)
+                    parsedTime == null -> context.getString(R.string.time_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
@@ -193,24 +198,24 @@ fun RecordEditorDialog(
                         saveTemplate,
                     )
                 }
-            }) { Text("저장") }
+            }) { AutoFitText(uiText(R.string.save), maxLines = 1) }
         },
         dismissButton = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (entry != null) TextButton(onClick = { onDelete(entry) }) { Text("삭제", color = MaterialTheme.colorScheme.error) }
-                TextButton(onClick = onDismiss) { Text("취소") }
+                if (entry != null) TextButton(onClick = { onDelete(entry) }) { AutoFitText(uiText(R.string.delete), color = MaterialTheme.colorScheme.error, maxLines = 1) }
+                TextButton(onClick = onDismiss) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
             }
         },
     )
 
     if (showNutritionScanner) {
         NutritionLabelScannerDialog(
-            reviewNote = "읽은 칼로리와 단백질을 입력칸에 그대로 채워요. 이번에 먹은 양과 다르면 저장 전에 수정해 주세요.",
+            reviewNote = uiText(R.string.confirm_values),
             onDismiss = { showNutritionScanner = false },
             onApply = { values ->
                 calories = formatInputAmount(values.caloriesKcal)
                 protein = formatInputAmount(values.proteinG)
-                nutritionBasis = values.basisDescription ?: "확인되지 않음"
+                nutritionBasis = values.basisDescription ?: context.getString(R.string.basis_unknown)
                 showNutritionScanner = false
             },
         )
@@ -224,6 +229,7 @@ fun TemplateRecordDialog(
     onDismiss: () -> Unit,
     onSave: (RecordDraft) -> Unit,
 ) {
+    val context = LocalContext.current
     var quantity by remember(template.id) { mutableStateOf("1") }
     val timeNow = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     var time by remember(template.id) { mutableStateOf(timeNow) }
@@ -236,19 +242,19 @@ fun TemplateRecordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("${template.name} 기록", fontWeight = FontWeight.Bold) },
+        title = { AutoFitText(uiText(R.string.template_record_title, template.name), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("1 ${template.unit}당 ${formatAmount(template.caloriesPerUnitKcal)} kcal · 단백질 ${formatAmount(template.proteinPerUnitG)}g", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                AutoFitText(uiText(R.string.template_nutrition, template.unit, formatAmount(template.caloriesPerUnitKcal), formatAmount(template.proteinPerUnitG)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 OutlinedTextField(
                     quantity,
                     { quantity = it },
-                    label = { Text("이번에 먹은 양 (${template.unit})") },
+                    label = { AutoFitText(uiText(R.string.template_quantity, template.unit), maxLines = 1) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text("이번 섭취량 · ${formatAmount(amount * template.caloriesPerUnitKcal)} kcal · 단백질 ${formatAmount(amount * template.proteinPerUnitG)}g", fontWeight = FontWeight.SemiBold)
+                AutoFitText(uiText(R.string.current_intake, formatAmount(amount * template.caloriesPerUnitKcal), formatAmount(amount * template.proteinPerUnitG)), fontWeight = FontWeight.SemiBold)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = time,
@@ -256,16 +262,16 @@ fun TemplateRecordDialog(
                             time = it
                             if (!tagManual) tag = inferMealTag(it)
                         },
-                        label = { Text("먹은 시간") },
+                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("식사 태그", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        AutoFitText(uiText(R.string.meal_tag), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(4.dp))
-                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) { Text(tag.ifBlank { "태그 없음" }) }
+                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) { AutoFitText(mealTagText(tag), maxLines = 1) }
                         DropdownMenu(expanded = tagMenuExpanded, onDismissRequest = { tagMenuExpanded = false }) {
-                            tags.forEach { option -> DropdownMenuItem(text = { Text(option) }, onClick = {
+                            tags.forEach { option -> DropdownMenuItem(text = { AutoFitText(mealTagText(option), maxLines = 1) }, onClick = {
                                 tag = if (option == "태그 없음") "" else option
                                 tagManual = true
                                 tagMenuExpanded = false
@@ -273,7 +279,7 @@ fun TemplateRecordDialog(
                         }
                     }
                 }
-                if (errorMessage != null) Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+                if (errorMessage != null) AutoFitText(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
         },
         confirmButton = {
@@ -281,17 +287,17 @@ fun TemplateRecordDialog(
                 val parsed = quantity.toDoubleOrNull()
                 val validTime = runCatching { LocalTime.parse(time) }.isSuccess
                 errorMessage = when {
-                    parsed == null || parsed <= 0 -> "먹은 양을 확인해 주세요."
-                    !validTime -> "시간은 24시간 형식으로 입력해 주세요."
+                    parsed == null || parsed <= 0 -> context.getString(R.string.quantity_invalid)
+                    !validTime -> context.getString(R.string.time_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
                     val count = parsed!!
                     onSave(RecordDraft(template.name, count, template.unit, count * template.caloriesPerUnitKcal, count * template.proteinPerUnitG, time, tag, tagManual))
                 }
-            }) { Text("기록 추가") }
+            }) { AutoFitText(uiText(R.string.apply_record), maxLines = 1) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("취소") } },
+        dismissButton = { TextButton(onClick = onDismiss) { AutoFitText(uiText(R.string.cancel), maxLines = 1) } },
     )
 }
 
@@ -304,27 +310,27 @@ fun FoodTemplatePickerDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("등록 음식 불러오기", fontWeight = FontWeight.Bold) },
+        title = { AutoFitText(uiText(R.string.load_registered_food), fontWeight = FontWeight.Bold) },
         text = {
             if (templates.isEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("등록한 음식이 아직 없어요. 바로 기록을 사용하거나 자주 먹는 음식을 등록해 보세요.")
-                    OutlinedButton(onClick = onOpenSettings) { Text("음식 등록으로 이동") }
+                    Text(uiText(R.string.no_templates_help))
+                    OutlinedButton(onClick = onOpenSettings) { AutoFitText(uiText(R.string.go_add_food), maxLines = 1) }
                 }
             } else {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     templates.forEach { food ->
                         OutlinedButton(onClick = { onSelect(food) }, modifier = Modifier.fillMaxWidth()) {
                             Column(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
-                                Text(food.name, fontWeight = FontWeight.SemiBold)
-                                Text("1 ${food.unit}당 ${formatAmount(food.caloriesPerUnitKcal)} kcal · 단백질 ${formatAmount(food.proteinPerUnitG)}g", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                AutoFitText(food.name, fontWeight = FontWeight.SemiBold)
+                                AutoFitText(uiText(R.string.template_nutrition, food.unit, formatAmount(food.caloriesPerUnitKcal), formatAmount(food.proteinPerUnitG)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("닫기") } },
+        confirmButton = { TextButton(onClick = onDismiss) { AutoFitText(uiText(R.string.close), maxLines = 1) } },
     )
 }
 
@@ -335,8 +341,10 @@ fun FoodTemplateEditorDialog(
     onSave: (FoodTemplateEntity) -> Unit,
     onDelete: ((FoodTemplateEntity) -> Unit)? = null,
 ) {
+    val context = LocalContext.current
     var name by remember(template?.id) { mutableStateOf(template?.name.orEmpty()) }
-    var unit by remember(template?.id) { mutableStateOf(template?.unit ?: "개") }
+    val defaultPieceUnit = uiText(R.string.unit_piece)
+    var unit by remember(template?.id) { mutableStateOf(template?.unit ?: defaultPieceUnit) }
     var calories by remember(template?.id) { mutableStateOf(template?.caloriesPerUnitKcal?.toString().orEmpty()) }
     var protein by remember(template?.id) { mutableStateOf(template?.proteinPerUnitG?.toString().orEmpty()) }
     var nutritionBasis by remember(template?.id) { mutableStateOf<String?>(null) }
@@ -345,23 +353,23 @@ fun FoodTemplateEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (template == null) "음식 등록" else "음식 수정", fontWeight = FontWeight.Bold) },
+        title = { AutoFitText(if (template == null) uiText(R.string.new_food) else uiText(R.string.edit_food), fontWeight = FontWeight.Bold) },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(name, { name = it }, label = { Text("음식 이름") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(unit, { unit = it }, label = { Text("기록 단위") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(name, { name = it }, label = { AutoFitText(uiText(R.string.food_name), maxLines = 1) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(unit, { unit = it }, label = { AutoFitText(uiText(R.string.record_unit), maxLines = 1) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(calories, { calories = it }, label = { Text("단위당 칼로리") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
-                    OutlinedTextField(protein, { protein = it }, label = { Text("단위당 단백질") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                    OutlinedTextField(calories, { calories = it }, label = { AutoFitText(uiText(R.string.calories_per_unit), maxLines = 1) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                    OutlinedTextField(protein, { protein = it }, label = { AutoFitText(uiText(R.string.protein_per_unit), maxLines = 1) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
                 }
                 OutlinedButton(onClick = { showNutritionScanner = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text("성분표에서 수치 가져오기")
+                    AutoFitText(uiText(R.string.nutrition_from_label))
                 }
                 nutritionBasis?.let { basis ->
-                    Text("읽은 성분표 기준: $basis", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    AutoFitText(uiText(R.string.nutrition_basis, basis), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
-                Text("등록할 때 수량은 입력하지 않아요. 기록할 때 먹은 양을 입력해요.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                if (errorMessage != null) Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                Text(uiText(R.string.template_quantity_note), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                if (errorMessage != null) AutoFitText(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {
@@ -369,10 +377,10 @@ fun FoodTemplateEditorDialog(
                 val parsedCalories = calories.toDoubleOrNull()
                 val parsedProtein = protein.toDoubleOrNull()
                 errorMessage = when {
-                    name.isBlank() -> "음식 이름을 입력해 주세요."
-                    unit.isBlank() -> "기록 단위를 입력해 주세요."
-                    parsedCalories == null || parsedCalories < 0 -> "칼로리를 확인해 주세요."
-                    parsedProtein == null || parsedProtein < 0 -> "단백질을 확인해 주세요."
+                    name.isBlank() -> context.getString(R.string.food_name_required)
+                    unit.isBlank() -> context.getString(R.string.record_unit_required)
+                    parsedCalories == null || parsedCalories < 0 -> context.getString(R.string.calories_invalid)
+                    parsedProtein == null || parsedProtein < 0 -> context.getString(R.string.protein_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
@@ -385,24 +393,24 @@ fun FoodTemplateEditorDialog(
                         createdAtEpochMillis = template?.createdAtEpochMillis ?: System.currentTimeMillis(),
                     ))
                 }
-            }) { Text("저장") }
+            }) { AutoFitText(uiText(R.string.save), maxLines = 1) }
         },
         dismissButton = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (template != null && onDelete != null) TextButton(onClick = { onDelete(template) }) { Text("삭제", color = MaterialTheme.colorScheme.error) }
-                TextButton(onClick = onDismiss) { Text("취소") }
+                if (template != null && onDelete != null) TextButton(onClick = { onDelete(template) }) { AutoFitText(uiText(R.string.delete), color = MaterialTheme.colorScheme.error, maxLines = 1) }
+                TextButton(onClick = onDismiss) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
             }
         },
     )
 
     if (showNutritionScanner) {
         NutritionLabelScannerDialog(
-            reviewNote = "성분표 기준과 기록 단위가 다르면 단위당 값으로 직접 환산해 주세요.",
+            reviewNote = uiText(R.string.template_basis_note),
             onDismiss = { showNutritionScanner = false },
             onApply = { values ->
                 calories = formatInputAmount(values.caloriesKcal)
                 protein = formatInputAmount(values.proteinG)
-                nutritionBasis = values.basisDescription ?: "확인되지 않음"
+                nutritionBasis = values.basisDescription ?: context.getString(R.string.basis_unknown)
                 showNutritionScanner = false
             },
         )

@@ -1,5 +1,7 @@
 package com.hazuny.noshnote.ui
 
+import com.hazuny.noshnote.R
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -94,12 +96,13 @@ fun HomeScreen(
                     onClick = { onDateChange(date.minusDays(1).toString()) },
                     modifier = Modifier.size(48.dp),
                 ) { Text("‹", fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center) }
-                Text(
-                    text = date.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)),
+                AutoFitText(
+                    text = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault())),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
                 )
                 IconButton(
                     onClick = { onDateChange(date.plusDays(1).toString()) },
@@ -111,7 +114,7 @@ fun HomeScreen(
                     shape = MaterialTheme.shapes.small,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 13.dp, vertical = 0.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                ) { Text("오늘", fontWeight = FontWeight.Bold) }
+                ) { AutoFitText(uiText(R.string.today), fontWeight = FontWeight.Bold, maxLines = 1) }
             }
         }
         item {
@@ -124,9 +127,9 @@ fun HomeScreen(
         }
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("기록", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                AutoFitText(uiText(R.string.record), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1)
                 Spacer(Modifier.width(8.dp))
-                Text("${dateEntries.size}개", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                AutoFitText(uiText(R.string.item_count, dateEntries.size), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1)
             }
         }
         item {
@@ -137,14 +140,20 @@ fun HomeScreen(
                     shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
-                ) { Text("＋  바로 기록", fontWeight = FontWeight.SemiBold) }
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                ) {
+                    AutoFitText(uiText(R.string.quick_record), textAlign = TextAlign.Center)
+                }
                 Button(
                     onClick = { showFoodPicker = true },
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
-                ) { Text("≡  음식 불러오기", fontWeight = FontWeight.SemiBold) }
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                ) {
+                    AutoFitText(uiText(R.string.load_food), textAlign = TextAlign.Center)
+                }
             }
         }
         if (dateEntries.isEmpty()) {
@@ -159,9 +168,9 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 25.dp, horizontal = 18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text("아직 기록이 없어요", fontWeight = FontWeight.SemiBold)
+                        AutoFitText(uiText(R.string.no_records_yet), fontWeight = FontWeight.SemiBold)
                         Spacer(Modifier.height(4.dp))
-                        Text("음식을 등록하지 않아도 바로 기록할 수 있어요.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        Text(uiText(R.string.quick_record_no_template), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -172,7 +181,7 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.size(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
                             Spacer(Modifier.width(7.dp))
-                            Text(group.tag, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            AutoFitText(mealTagText(group.tag), color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -254,28 +263,35 @@ private fun DailySummaryCard(calories: Double, protein: Double, goalCalories: Do
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(NoshNoteSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text("오늘 섭취 현황", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            NutrientProgress("칼로리", calories, goalCalories, "kcal", MaterialTheme.colorScheme.primary)
-            NutrientProgress("단백질", protein, goalProtein, "g", MaterialTheme.colorScheme.secondary)
+            AutoFitText(uiText(R.string.today_intake), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            NutrientProgress(R.string.calories, calories, goalCalories, "kcal", MaterialTheme.colorScheme.primary)
+            NutrientProgress(R.string.protein, protein, goalProtein, "g", MaterialTheme.colorScheme.secondary)
         }
     }
 }
 
 @Composable
-private fun NutrientProgress(label: String, value: Double, goal: Double?, unit: String, color: Color) {
-    val targetText = goal?.let { formatAmount(it) } ?: "목표 미설정"
+private fun NutrientProgress(labelRes: Int, value: Double, goal: Double?, unit: String, color: Color) {
+    val label = uiText(labelRes)
+    val targetText = goal?.let { formatAmount(it) } ?: uiText(R.string.goal_not_set)
     val progress = if (goal != null && goal > 0) (value / goal).coerceIn(0.0, 1.0).toFloat() else 0f
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-            Text("${formatAmount(value)} / $targetText${if (goal != null) " $unit" else ""}", fontWeight = FontWeight.Bold)
+            AutoFitText(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, contentAlignment = Alignment.CenterStart)
+            AutoFitText(
+                "${formatAmount(value)} / $targetText${if (goal != null) " $unit" else ""}",
+                modifier = Modifier.weight(1f),
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.End,
+                contentAlignment = Alignment.CenterEnd,
+            )
         }
         Box(Modifier.fillMaxWidth().height(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer)) {
             Box(Modifier.fillMaxWidth(progress).height(7.dp).clip(CircleShape).background(color))
         }
         if (goal != null) {
             val remaining = (goal - value).coerceAtLeast(0.0)
-            Text("${if (value >= goal) "목표에 도달했어요" else "남은 양 ${formatAmount(remaining)} $unit"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            AutoFitText(if (value >= goal) uiText(R.string.goal_reached) else uiText(R.string.amount_remaining, formatAmount(remaining), unit), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -290,8 +306,8 @@ private fun EntryRow(entry: MealEntryEntity, onClick: () -> Unit) {
         val time = Instant.ofEpochMilli(entry.eatenAtEpochMillis).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm"))
         Text(time, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         Column(Modifier.weight(1f)) {
-            Text(entry.foodNameSnapshot, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-            Text("${formatAmount(entry.quantity)} ${entry.unitSnapshot} · 단백질 ${formatAmount(entry.proteinGSnapshot)}g", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+            AutoFitText(entry.foodNameSnapshot, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+            AutoFitText(uiText(R.string.entry_detail, formatAmount(entry.quantity), entry.unitSnapshot, formatAmount(entry.proteinGSnapshot)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, minFontSize = 8.sp)
         }
         Text("${formatAmount(entry.caloriesKcalSnapshot)} kcal", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
@@ -299,7 +315,7 @@ private fun EntryRow(entry: MealEntryEntity, onClick: () -> Unit) {
 
 private fun groupAdjacentEntries(entries: List<MealEntryEntity>): List<EntryGroup> = buildList {
     entries.forEach { entry ->
-        val tag = entry.mealTag.ifBlank { "태그 없음" }
+        val tag = entry.mealTag
         val last = lastOrNull()
         if (last?.tag == tag) {
             removeAt(lastIndex)
@@ -308,6 +324,15 @@ private fun groupAdjacentEntries(entries: List<MealEntryEntity>): List<EntryGrou
             add(EntryGroup(tag, listOf(entry)))
         }
     }
+}
+
+@Composable
+internal fun mealTagText(tag: String): String = when (tag) {
+    "아침" -> uiText(R.string.meal_breakfast)
+    "점심" -> uiText(R.string.meal_lunch)
+    "저녁" -> uiText(R.string.meal_dinner)
+    "간식" -> uiText(R.string.meal_snack)
+    else -> uiText(R.string.tag_none)
 }
 
 fun formatAmount(value: Double): String =

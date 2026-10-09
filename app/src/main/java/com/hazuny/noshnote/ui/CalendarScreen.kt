@@ -1,5 +1,7 @@
 package com.hazuny.noshnote.ui
 
+import com.hazuny.noshnote.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,7 +46,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
@@ -123,16 +124,16 @@ fun CalendarScreen(
                     val stackStats = maxWidth < 280.dp || fontScale >= 1.6f
                     if (stackStats) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            CalendarStat("이번 달 기록", "${monthRecordDays}일", Modifier.fillMaxWidth())
-                            CalendarStat("현재 연속 기록", "${streak}일", Modifier.fillMaxWidth())
+                            CalendarStat(uiText(R.string.month_records), uiText(R.string.day_count, monthRecordDays), Modifier.fillMaxWidth())
+                            CalendarStat(uiText(R.string.streak_current), uiText(R.string.day_streak, streak), Modifier.fillMaxWidth())
                         }
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            CalendarStat("이번 달 기록", "${monthRecordDays}일", Modifier.weight(1f))
-                            CalendarStat("현재 연속 기록", "${streak}일", Modifier.weight(1f))
+                            CalendarStat(uiText(R.string.month_records), uiText(R.string.day_count, monthRecordDays), Modifier.weight(1f))
+                            CalendarStat(uiText(R.string.streak_current), uiText(R.string.day_streak, streak), Modifier.weight(1f))
                         }
                     }
                 }
@@ -142,11 +143,14 @@ fun CalendarScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                val previousMonthDescription = uiText(R.string.previous_month)
+                val selectMonthDescription = uiText(R.string.select_month)
+                val nextMonthDescription = uiText(R.string.next_month)
                 IconButton(
                     onClick = { monthKey = month.minusMonths(1).toString() },
                     modifier = Modifier
                         .size(48.dp)
-                        .semantics { contentDescription = "이전 달" },
+                        .semantics { contentDescription = previousMonthDescription },
                 ) {
                     Text("‹", fontSize = 28.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -157,12 +161,11 @@ fun CalendarScreen(
                             pickerMonth = month.monthValue
                             showMonthPicker = true
                         },
-                        modifier = Modifier.semantics { contentDescription = "월 선택" },
+                        modifier = Modifier.semantics { contentDescription = selectMonthDescription },
                     ) {
-                        Text(
-                            month.format(DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREAN)),
+                        AutoFitText(
+                            month.format(DateTimeFormatter.ofPattern(uiText(R.string.month_pattern), Locale.getDefault())),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -174,7 +177,7 @@ fun CalendarScreen(
                     onClick = { monthKey = month.plusMonths(1).toString() },
                     modifier = Modifier
                         .size(48.dp)
-                        .semantics { contentDescription = "다음 달" },
+                        .semantics { contentDescription = nextMonthDescription },
                 ) {
                     Text("›", fontSize = 28.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -196,13 +199,14 @@ fun CalendarScreen(
                         horizontalArrangement = Arrangement.spacedBy(gridGap),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        listOf("일", "월", "화", "수", "목", "금", "토").forEach { label ->
-                            Text(
+                        java.text.DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays.filter { it.isNotBlank() }.forEach { label ->
+                            AutoFitText(
                                 label,
                                 modifier = Modifier.weight(1f).padding(vertical = 4.dp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.labelLarge,
+                                maxLines = 1,
                             )
                         }
                     }
@@ -250,7 +254,7 @@ fun CalendarScreen(
                     .padding(bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("월 선택", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                AutoFitText(uiText(R.string.select_month), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -260,7 +264,7 @@ fun CalendarScreen(
                         value = pickerYear,
                         range = minimumYear..maximumYear,
                         wrap = false,
-                        label = { "${it}년" },
+                        label = { uiText(R.string.date_year, it) },
                         onValueChange = { pickerYear = it },
                         modifier = Modifier.weight(1f),
                     )
@@ -268,7 +272,7 @@ fun CalendarScreen(
                         value = pickerMonth,
                         range = 1..12,
                         wrap = true,
-                        label = { "${it}월" },
+                        label = { uiText(R.string.date_month, java.time.Month.of(it).getDisplayName(java.time.format.TextStyle.FULL, Locale.getDefault())) },
                         onValueChange = { pickerMonth = it },
                         modifier = Modifier.weight(1f),
                     )
@@ -280,14 +284,14 @@ fun CalendarScreen(
                     TextButton(
                         onClick = { showMonthPicker = false },
                         modifier = Modifier.weight(1f),
-                    ) { Text("취소") }
+                    ) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
                     Button(
                         onClick = {
                             monthKey = LocalDate.of(pickerYear.coerceIn(minimumYear, maximumYear), pickerMonth, 1).toString()
                             showMonthPicker = false
                         },
                         modifier = Modifier.weight(1f),
-                    ) { Text("이 달 보기") }
+                    ) { AutoFitText(uiText(R.string.month_view), maxLines = 1) }
                 }
             }
         }
@@ -299,7 +303,7 @@ private fun WheelPickerColumn(
     value: Int,
     range: IntRange,
     wrap: Boolean,
-    label: (Int) -> String,
+    label: @Composable (Int) -> String,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -348,7 +352,7 @@ private fun WheelPickerColumn(
                     .clickable(enabled = !selected) { onValueChange(itemValue) },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
+                AutoFitText(
                     label(itemValue),
                     color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (kotlin.math.abs(offset) == 1) 0.72f else 0.42f),
                     style = if (selected) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyLarge,
@@ -373,12 +377,12 @@ private fun nextWheelValue(value: Int, delta: Int, range: IntRange, wrap: Boolea
 @Composable
 private fun CalendarStat(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
+        AutoFitText(
             label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        AutoFitText(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -415,22 +419,24 @@ private fun CalendarDay(
         Color(0xFF194E66)
     }
     val statusDescription = when {
-        isToday && !hasRecord -> "오늘 진행 중, 아직 기록 없음"
-        isToday && goalCount == 0 -> "오늘 진행 중, 목표 미설정"
-        isToday -> "오늘 진행 중, 현재 $achievedGoalCount/$goalCount 목표 달성"
-        !hasRecord -> "기록 없음"
-        goalCount == 0 -> "기록 있음, 목표 미설정"
-        achievedGoalCount == 0 -> "미달성, 0/$goalCount 목표"
-        achievedGoalCount < goalCount -> "일부 달성, $achievedGoalCount/$goalCount 목표"
-        else -> "성공, $achievedGoalCount/$goalCount 목표"
+        isToday && !hasRecord -> uiText(R.string.calendar_status_today_empty)
+        isToday && goalCount == 0 -> uiText(R.string.calendar_status_today_no_goal)
+        isToday -> uiText(R.string.calendar_status_today_progress, achievedGoalCount, goalCount)
+        !hasRecord -> uiText(R.string.calendar_status_no_record)
+        goalCount == 0 -> uiText(R.string.calendar_status_record_no_goal)
+        achievedGoalCount == 0 -> uiText(R.string.calendar_status_failed, 0, goalCount)
+        achievedGoalCount < goalCount -> uiText(R.string.calendar_status_partial, achievedGoalCount, goalCount)
+        else -> uiText(R.string.calendar_status_success, achievedGoalCount, goalCount)
     }
+    val accessibleDate = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault()))
+    val dateDescription = uiText(R.string.date_accessibility, accessibleDate, statusDescription)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(backgroundColor)
             .then(if (isToday) Modifier.border(1.5.dp, Color(0xFF287FA5), RoundedCornerShape(10.dp)) else Modifier)
             .clickable(onClick = onClick)
-            .semantics { contentDescription = "${date.monthValue}월 ${date.dayOfMonth}일, $statusDescription" }
+            .semantics { contentDescription = dateDescription }
             .then(if (isToday) Modifier.padding(1.dp) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

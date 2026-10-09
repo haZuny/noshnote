@@ -1,5 +1,7 @@
 package com.hazuny.noshnote.ui
 
+import com.hazuny.noshnote.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -43,6 +46,7 @@ fun SettingsScreen(
     goalProtein: Double?,
     foodTemplates: List<FoodTemplateEntity>,
 ) {
+    val context = LocalContext.current
     var calories by remember { mutableStateOf("") }
     var protein by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
@@ -73,12 +77,12 @@ fun SettingsScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             ) {
                 Column(Modifier.fillMaxWidth().padding(NoshNoteSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("일일 목표", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    AutoFitText(uiText(R.string.daily_goal), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = calories,
                             onValueChange = { calories = it; message = null },
-                            label = { Text("칼로리 (kcal)") },
+                            label = { AutoFitText(uiText(R.string.calories_protein_unit), maxLines = 1) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
@@ -86,36 +90,36 @@ fun SettingsScreen(
                         OutlinedTextField(
                             value = protein,
                             onValueChange = { protein = it; message = null },
-                            label = { Text("단백질 (g)") },
+                            label = { AutoFitText(uiText(R.string.protein_unit), maxLines = 1) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
                         )
                     }
-                    if (message != null) Text(message!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    if (message != null) AutoFitText(message!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     Button(
                         onClick = {
                             val parsedCalories = calories.toDoubleOrNull()
                             val parsedProtein = protein.toDoubleOrNull()
                             if (parsedCalories == null || parsedProtein == null || parsedCalories <= 0 || parsedProtein <= 0) {
-                                message = "두 목표 모두 0보다 큰 숫자로 입력해 주세요."
+                                message = context.getString(R.string.goal_invalid)
                             } else {
                                 viewModel.saveGoal(parsedCalories, parsedProtein)
-                                message = "목표를 저장했어요."
+                                message = context.getString(R.string.goal_saved)
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                    ) { Text("목표 저장") }
+                    ) { AutoFitText(uiText(R.string.save_goal), maxLines = 1) }
                 }
             }
         }
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("내 음식", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("반복해서 먹는 음식을 선택할 때 사용해요.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    AutoFitText(uiText(R.string.my_foods), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(uiText(R.string.my_foods_description), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                OutlinedButton(onClick = { creatingTemplate = true }) { Text("음식 등록") }
+                OutlinedButton(onClick = { creatingTemplate = true }) { AutoFitText(uiText(R.string.add_food), maxLines = 1) }
             }
         }
         if (foodTemplates.isEmpty()) {
@@ -126,7 +130,7 @@ fun SettingsScreen(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 ) {
-                    Text("등록한 음식이 아직 없어요. 바로 기록에는 음식 등록이 필요하지 않아요.", modifier = Modifier.padding(NoshNoteSpacing.cardPadding), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(uiText(R.string.no_foods), modifier = Modifier.padding(NoshNoteSpacing.cardPadding), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         } else {
@@ -144,10 +148,10 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Column(Modifier.weight(1f)) {
-                            Text(template.name, fontWeight = FontWeight.SemiBold)
-                            Text("1 ${template.unit}당 ${formatAmount(template.caloriesPerUnitKcal)} kcal · 단백질 ${formatAmount(template.proteinPerUnitG)}g", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            AutoFitText(template.name, fontWeight = FontWeight.SemiBold)
+                            AutoFitText(uiText(R.string.template_nutrition, template.unit, formatAmount(template.caloriesPerUnitKcal), formatAmount(template.proteinPerUnitG)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                         }
-                        TextButton(onClick = { editingTemplate = template }) { Text("수정") }
+                        TextButton(onClick = { editingTemplate = template }) { AutoFitText(uiText(R.string.edit), maxLines = 1) }
                     }
                 }
             }
@@ -171,16 +175,16 @@ fun SettingsScreen(
     deletingTemplate?.let { template ->
         AlertDialog(
             onDismissRequest = { deletingTemplate = null },
-            title = { Text("음식을 삭제할까요?") },
-            text = { Text("${template.name} 템플릿만 삭제하고, 기존 식단 기록은 유지해요.") },
+            title = { AutoFitText(uiText(R.string.delete_food_title)) },
+            text = { Text(uiText(R.string.delete_food_message, template.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteTemplate(template.id)
                     deletingTemplate = null
                     editingTemplate = null
-                }) { Text("삭제", color = MaterialTheme.colorScheme.error) }
+                }) { AutoFitText(uiText(R.string.delete), color = MaterialTheme.colorScheme.error, maxLines = 1) }
             },
-            dismissButton = { TextButton(onClick = { deletingTemplate = null }) { Text("취소") } },
+            dismissButton = { TextButton(onClick = { deletingTemplate = null }) { AutoFitText(uiText(R.string.cancel), maxLines = 1) } },
         )
     }
 }

@@ -22,15 +22,15 @@ object NutritionLabelParser {
     private val number = Regex("($numberPattern)", RegexOption.IGNORE_CASE)
     private val standaloneNumber = Regex(numberPattern)
     private val basisLabel = Regex(
-        "1회제공량|1회분량|총내용량|100g당|100ml당|영양정보기준",
+        "1회제공량|1회분량|총내용량|100g당|100ml당|영양정보기준|servingsize|servingspercontainer|per100g|per100ml",
         RegexOption.IGNORE_CASE,
     )
-    private val dailyTerms = Regex("1일|일일|하루|매일", RegexOption.IGNORE_CASE)
-    private val nutritionTerms = Regex("영양성분|영양소", RegexOption.IGNORE_CASE)
-    private val referenceTerms = Regex("기준치|기준량|기준|권장", RegexOption.IGNORE_CASE)
+    private val dailyTerms = Regex("1일|일일|하루|매일|daily|perday", RegexOption.IGNORE_CASE)
+    private val nutritionTerms = Regex("영양성분|영양소|nutritionfacts|nutritioninformation", RegexOption.IGNORE_CASE)
+    private val referenceTerms = Regex("기준치|기준량|기준|권장|dailyvalue|referenceintake", RegexOption.IGNORE_CASE)
     private val ratioTerms = Regex("비율|퍼센트|%", RegexOption.IGNORE_CASE)
-    private val nutritionContext = Regex("영양정보|영양성분|총내용량|1회제공량|100g당|100ml당", RegexOption.IGNORE_CASE)
-    private val servingBasisContext = Regex("총내용량|1회제공량|1회분량|100g당|100ml당", RegexOption.IGNORE_CASE)
+    private val nutritionContext = Regex("영양정보|영양성분|총내용량|1회제공량|100g당|100ml당|nutritionfacts|servingsize|per100g|per100ml", RegexOption.IGNORE_CASE)
+    private val servingBasisContext = Regex("총내용량|1회제공량|1회분량|100g당|100ml당|servingsize|servingspercontainer|per100g|per100ml", RegexOption.IGNORE_CASE)
     private val whitespace = Regex("\\s+")
 
     fun parse(recognizedText: String): NutritionLabelValues? {

@@ -1,5 +1,7 @@
 package com.hazuny.noshnote.ui
 
+import com.hazuny.noshnote.R
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -84,7 +86,7 @@ fun NutritionLabelScannerDialog(
     var stableValues by remember { mutableStateOf<NutritionLabelValues?>(null) }
     var candidateDetected by remember { mutableStateOf(false) }
     var panelDetected by remember { mutableStateOf(false) }
-    var scanStatus by remember { mutableStateOf("성분표를 화면에 비춰 주세요") }
+    var scanStatus by remember { mutableStateOf(context.getString(R.string.scan_prompt)) }
     var scanGeneration by remember { mutableIntStateOf(0) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionGranted = granted
@@ -116,23 +118,24 @@ fun NutritionLabelScannerDialog(
                         modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text("성분표를 화면에 비춰 주세요", color = Color.White, style = MaterialTheme.typography.titleMedium)
-                        Text("칼로리와 단백질이 읽히면 자동으로 멈춰요", color = Color.White.copy(alpha = .85f), style = MaterialTheme.typography.bodySmall)
+                        AutoFitText(uiText(R.string.scan_prompt), color = Color.White, style = MaterialTheme.typography.titleMedium)
+                        AutoFitText(uiText(R.string.scan_auto_stop), color = Color.White.copy(alpha = .85f), style = MaterialTheme.typography.bodySmall)
                         Spacer(Modifier.height(10.dp))
                         Surface(
                             color = if (panelDetected || candidateDetected || stableValues != null) Color(0xFF16885A) else Color.Black.copy(alpha = .45f),
                             shape = RoundedCornerShape(50),
                         ) {
-                            Text(
+                            AutoFitText(
                                 when {
-                                    stableValues != null -> "✓ 영양정보 인식 완료"
-                                    candidateDetected -> "영양정보 감지 · 값 확인 중"
-                                    panelDetected -> "성분표 영역 감지 · 확대 인식 중"
-                                    else -> "영양정보 인식 중"
+                                    stableValues != null -> context.getString(R.string.scan_complete)
+                                    candidateDetected -> context.getString(R.string.scan_candidates)
+                                    panelDetected -> context.getString(R.string.scan_panel)
+                                    else -> context.getString(R.string.scan_processing)
                                 },
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 color = Color.White,
                                 style = MaterialTheme.typography.labelMedium,
+                                maxLines = 1,
                             )
                         }
                     }
@@ -152,7 +155,7 @@ fun NutritionLabelScannerDialog(
                             color = MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(16.dp),
                         ) {
-                            Text(cameraError!!, modifier = Modifier.padding(18.dp), color = MaterialTheme.colorScheme.error)
+                            AutoFitText(cameraError!!, modifier = Modifier.padding(18.dp), color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -167,17 +170,17 @@ fun NutritionLabelScannerDialog(
                     ) {
                         val values = stableValues
                         if (values == null) {
-                            Text(scanStatus, style = MaterialTheme.typography.titleSmall)
-                            Text("표면을 펴고 빛 반사가 없도록 비스듬히 비춰 주세요. 초점이 흐리면 화면을 탭해 맞춰 주세요.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                            if (cameraError != null) Text("카메라를 사용할 수 없어요. 수동 입력으로 계속해 주세요.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                            AutoFitText(scanStatus, style = MaterialTheme.typography.titleSmall)
+                            Text(uiText(R.string.scan_glare_help), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                            if (cameraError != null) AutoFitText(uiText(R.string.camera_unavailable), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                         } else {
-                            Text("읽은 값을 확인해 주세요", style = MaterialTheme.typography.titleSmall)
+                            AutoFitText(uiText(R.string.scan_review_values), style = MaterialTheme.typography.titleSmall)
                             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                                Text("${formatNutritionValue(values.caloriesKcal)} kcal")
-                                Text("단백질 ${formatNutritionValue(values.proteinG)} g")
+                                AutoFitText("${formatNutritionValue(values.caloriesKcal)} kcal", maxLines = 1)
+                                AutoFitText(uiText(R.string.protein_value, formatNutritionValue(values.proteinG)), maxLines = 1)
                             }
-                            Text(
-                                "표기 기준: ${values.basisDescription ?: "확인되지 않음"}",
+                            AutoFitText(
+                                uiText(R.string.basis_label, values.basisDescription ?: uiText(R.string.basis_unknown)),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodySmall,
                             )
@@ -194,17 +197,17 @@ fun NutritionLabelScannerDialog(
                                     candidateDetected = false
                                     panelDetected = false
                                     cameraError = null
-                                    scanStatus = "성분표를 다시 찾고 있어요"
+                                    scanStatus = context.getString(R.string.scan_retry_prompt)
                                     scanGeneration++
                                 },
                                 enabled = stableValues != null,
                                 modifier = Modifier.weight(1f),
-                            ) { Text("다시 인식") }
+                            ) { AutoFitText(uiText(R.string.scan_again), maxLines = 1) }
                             Button(
                                 onClick = { stableValues?.let(onApply) },
                                 enabled = stableValues != null,
                                 modifier = Modifier.weight(1f),
-                            ) { Text("값 적용") }
+                            ) { AutoFitText(uiText(R.string.apply_values), maxLines = 1) }
                         }
                     }
                 }
@@ -215,15 +218,15 @@ fun NutritionLabelScannerDialog(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(if (permissionDenied) "카메라 권한이 필요해요" else "카메라 권한을 확인하고 있어요", style = MaterialTheme.typography.titleMedium)
+                    AutoFitText(if (permissionDenied) uiText(R.string.camera_permission_needed) else uiText(R.string.camera_permission_check), style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "권한 없이도 음식 정보를 직접 입력할 수 있어요.",
+                        uiText(R.string.manual_input_available),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (permissionDenied) {
                         Spacer(Modifier.height(16.dp))
-                        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) { Text("권한 다시 요청") }
+                        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) { AutoFitText(uiText(R.string.request_camera_permission), maxLines = 1) }
                     }
                 }
             }
@@ -282,21 +285,21 @@ fun NutritionLabelScannerDialog(
                     null
                 }
                 val nextStatus = when {
-                    quality.glareRatio >= 0.12 -> "빛 반사가 보여요. 조명을 비스듬히 비춰 주세요."
-                    quality.sharpness < 18.0 -> "초점이 흐려요. 화면을 탭해 초점을 맞춰 주세요."
-                    recognizedText.isBlank() -> "글자를 찾지 못했어요. 성분표를 더 가까이 비춰 주세요."
-                    stableCalories != null && stableProtein == null -> "칼로리는 읽었어요. 단백질 표기를 찾고 있어요."
-                    stableProtein != null && stableCalories == null -> "단백질은 읽었어요. 칼로리 표기를 찾고 있어요."
-                    candidateDetectedInRecentFrames -> "칼로리와 단백질을 확인하고 있어요. 잠시 고정해 주세요."
-                    hasPanel -> "성분표를 찾았어요. 영역을 확대해 영양값을 읽고 있어요."
-                    else -> "칼로리·단백질 표기를 찾지 못했어요. 성분표를 가이드 안에 맞춰 주세요."
+                    quality.glareRatio >= 0.12 -> context.getString(R.string.scan_glare)
+                    quality.sharpness < 18.0 -> context.getString(R.string.scan_blurry)
+                    recognizedText.isBlank() -> context.getString(R.string.scan_no_text)
+                    stableCalories != null && stableProtein == null -> context.getString(R.string.scan_calories_found)
+                    stableProtein != null && stableCalories == null -> context.getString(R.string.scan_protein_found)
+                    candidateDetectedInRecentFrames -> context.getString(R.string.scan_review_candidates)
+                    hasPanel -> context.getString(R.string.scan_zoom_panel)
+                    else -> context.getString(R.string.scan_no_values)
                 }
                 if (confirmedValues != null && locked.compareAndSet(false, true)) {
                     mainExecutor.execute {
                         panelDetected = hasPanel
                         candidateDetected = true
                         stableValues = confirmedValues
-                        scanStatus = "수치를 찾았어요. 입력 전에 확인해 주세요."
+                        scanStatus = context.getString(R.string.scan_review_before_apply)
                     }
                 } else {
                     mainExecutor.execute {
@@ -414,7 +417,7 @@ fun NutritionLabelScannerDialog(
                                         candidateDetected = recentCandidates.any {
                                             it.caloriesKcal != null || it.proteinG != null
                                         }
-                                        scanStatus = "문자를 읽지 못했어요. 빛 반사를 줄이고 다시 비춰 주세요."
+                                        scanStatus = context.getString(R.string.scan_text_retry)
                                     }
                                 }
                                 imageProxy.close()
@@ -438,7 +441,7 @@ fun NutritionLabelScannerDialog(
                         }
                     }
                 } catch (_: Exception) {
-                    mainExecutor.execute { cameraError = "카메라를 시작하지 못했어요. 권한과 카메라 연결을 확인해 주세요." }
+                    mainExecutor.execute { cameraError = context.getString(R.string.camera_start_failed) }
                 }
             }, mainExecutor)
 
@@ -460,7 +463,7 @@ fun NutritionLabelScannerDialog(
 @Composable
 private fun TextButtonClose(onClick: () -> Unit, modifier: Modifier = Modifier) {
     androidx.compose.material3.TextButton(onClick = onClick, modifier = modifier) {
-        Text("닫기", color = MaterialTheme.colorScheme.onSurface)
+        AutoFitText(uiText(R.string.scan_close), color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
     }
 }
 
@@ -468,7 +471,7 @@ private fun formatNutritionValue(value: Double): String =
     formatInputAmount(value)
 
 private val nutritionPanelAnchor = Regex(
-    "영양정보|영양성분|나트륨|탄수화물|당류|단백질|포화지방|트랜스지방|지방|열량|칼로리|에너지",
+    "영양정보|영양성분|나트륨|탄수화물|당류|단백질|포화지방|트랜스지방|지방|열량|칼로리|에너지|nutritionfacts|servingsize|calories|protein|totalfat|sodium|carbohydrate|sugars",
 )
 private val proteinLabelAnchor = Regex("단백질|protein", RegexOption.IGNORE_CASE)
 private val gramValueAnchor = Regex("(?:[0-9]+(?:[.,][0-9]+)*|[.,][0-9]+)(?:g|그램)", RegexOption.IGNORE_CASE)
