@@ -3,30 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f8f5">
-  <title>meal-tracker · UX demo</title>
+  <meta name="theme-color" content="#f7fafc">
+  <title>meal-tracker</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f8f5;
+      --bg: #f7fafc;
       --surface: #fff;
-      --ink: #20251f;
-      --muted: #737b72;
-      --line: #e8ebe5;
-      --green: #4c805d;
-      --green-soft: #e8f1e9;
-      --blue: #5d7b9c;
-      --blue-soft: #e9eff5;
+      --ink: #26333d;
+      --muted: #737f88;
+      --line: #d5dfe5;
+      --green: #2588b2;
+      --green-soft: #e5f4fb;
+      --blue: #2588b2;
+      --blue-soft: #edf8fc;
       --danger: #a84d47;
-      --radius: 18px;
+      --radius: 16px;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
-    .app { max-width: 560px; min-height: 100vh; margin: 0 auto; padding: 22px 18px 98px; }
-    .topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-    .brand { font-size: 20px; font-weight: 750; letter-spacing: -.04em; }
+    .app { max-width: 480px; min-height: 100vh; margin: 0 auto; padding: 24px 18px 104px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .brand { font-size: 19px; font-weight: 780; letter-spacing: -.045em; }
     .eyebrow { color: var(--muted); font-size: 12px; }
     .screen { display: none; }
     .screen.active { display: block; }
@@ -35,31 +35,47 @@
     p { margin: 0; }
     .subtle { color: var(--muted); font-size: 13px; }
     .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 26px 0 12px; }
+    .home-actions { display: flex; gap: 8px; margin: 0 0 12px; }
+    .home-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; height: 48px; padding: 0 8px; border: 1px solid #34566c; border-radius: 13px; color: white; background: #3c627a; font-size: 13px; font-weight: 700; box-shadow: 0 3px 7px rgba(31,62,81,.2), 0 1px 2px rgba(28,53,68,.14); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
+    .home-actions button:active { background: #31566e; transform: translateY(1px); box-shadow: 0 1px 3px rgba(31,62,81,.18); }
+    .action-icon { display: inline-grid; place-items: center; color: white; font-size: 17px; font-weight: 700; line-height: 1; }
     .date-switch { display: flex; align-items: center; gap: 8px; margin: 17px 0; }
     .date-switch strong { min-width: 112px; text-align: center; font-size: 14px; }
     .icon-btn, .secondary, .primary, .danger-btn { border: 0; border-radius: 12px; min-height: 42px; padding: 0 14px; }
     .icon-btn { width: 42px; padding: 0; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: 18px; }
-    .primary { color: white; background: var(--green); font-weight: 650; }
-    .primary:active { background: #3b6c4b; }
-    .secondary { color: var(--ink); background: #f0f2ee; }
-    .load-food-btn { color: var(--blue); background: var(--blue-soft); border: 1px solid #cdd9e5; font-weight: 650; }
+    .primary { color: white; background: var(--green); font-weight: 650; box-shadow: 0 3px 8px rgba(56,103,132,.2), 0 1px 2px rgba(38,69,88,.1); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
+    .primary:active { background: #216e90; transform: translateY(1px); box-shadow: 0 1px 3px rgba(45,101,134,.18); }
+    .secondary { color: var(--ink); background: #eef2f4; }
+    .load-food-btn { color: var(--ink); background: var(--surface); border: 1px solid var(--line); font-weight: 650; }
     .danger-btn { color: var(--danger); background: #fbefee; }
     .wide { width: 100%; }
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 17px; }
-    .summary { display: grid; gap: 13px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 17px; box-shadow: none; }
+    .summary { display: grid; gap: 16px; padding: 18px; background: linear-gradient(145deg, #ffffff 0%, #f7fcff 100%); border: 2px solid #64b3d3; box-shadow: 0 4px 14px rgba(44,146,192,.11); }
+    .summary-title { margin-bottom: 1px; font-size: 14px; font-weight: 700; }
     .metric-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-    .metric-name { font-weight: 650; }
-    .metric-value { font-size: 14px; font-weight: 700; }
-    .track { height: 8px; background: #eef0ec; border-radius: 99px; overflow: hidden; }
-    .fill { height: 100%; width: 0; background: var(--green); border-radius: inherit; transition: width .2s; }
-    .fill.protein { background: var(--blue); }
+    .metric-name { font-size: 13px; font-weight: 650; color: #326f8b; }
+    .metric-value { font-size: 17px; font-weight: 750; }
+    .track { height: 6px; background: #dcebf2; border-radius: 99px; overflow: hidden; }
+    .fill { height: 100%; width: 0; background: #329ac6; border-radius: inherit; transition: width .2s; }
+    .fill.protein { background: #7dbcdc; }
     .remaining { display: flex; justify-content: space-between; gap: 10px; margin-top: 7px; color: var(--muted); font-size: 12px; }
     .meal-card { margin-bottom: 10px; padding: 0; overflow: hidden; }
     .meal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 15px 10px; }
     .meal-total { color: var(--muted); font-size: 12px; }
     .meal-content { padding: 0 15px 10px; }
-    .empty { padding: 5px 0 9px; color: #8a9188; font-size: 13px; }
-    .food-row { display: flex; align-items: center; gap: 10px; border-top: 1px solid #f0f1ee; padding: 11px 0; }
+    .empty { padding: 5px 0 9px; color: #7d878e; font-size: 13px; }
+    .food-row { display: flex; align-items: center; gap: 10px; border-top: 1px solid #e5e9ec; padding: 11px 0; }
+    .entry-group { margin-bottom: 9px; }
+    .entry-group-list { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+    .entry-card { padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .entry-card + .entry-card { border-top: 1px solid #e5e9ec; }
+    .entry-row { gap: 7px; padding: 6px 10px; border: 0; }
+    .entry-row .food-info strong { line-height: 1.25; }
+    .entry-row .food-info small { font-size: 11px; line-height: 1.2; }
+    .entry-time { width: 38px; font-size: 11px; }
+    .entry-group-title { display: flex; align-items: center; gap: 7px; margin: 10px 2px 5px; color: #326f8b; font-size: 12px; font-weight: 700; }
+    .entry-group:first-child .entry-group-title { margin-top: 0; }
+    .entry-group-title::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
     .food-info { flex: 1; min-width: 0; }
     .food-info strong { display: block; font-size: 14px; }
     .tag-pill { display: inline-block; margin-left: 5px; padding: 2px 7px; border-radius: 99px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 600; vertical-align: 1px; }
@@ -68,68 +84,87 @@
     .row-actions { display: flex; gap: 5px; }
     .tiny { border: 1px solid var(--line); color: var(--muted); background: white; border-radius: 9px; min-width: 31px; height: 31px; }
     .add-meal { width: 100%; min-height: 39px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--green); font-weight: 650; }
-    .nav { position: fixed; z-index: 3; bottom: 0; left: 50%; transform: translateX(-50%); width: min(560px, 100%); display: grid; grid-template-columns: repeat(3, 1fr); padding: 9px 13px calc(9px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); border-top: 1px solid var(--line); backdrop-filter: blur(14px); }
-    .nav button { border: 0; background: transparent; color: #81877f; padding: 7px 3px 4px; font-size: 11px; }
+    .nav { position: fixed; z-index: 3; bottom: 0; left: 50%; transform: translateX(-50%); width: min(480px, 100%); display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 13px calc(10px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.97); border-top: 1px solid var(--line); backdrop-filter: blur(14px); }
+    .nav button { border: 0; background: transparent; color: #7a8790; padding: 7px 3px 4px; font-size: 11px; }
     .nav button span { display: block; font-size: 18px; margin-bottom: 2px; }
     .nav button.active { color: var(--green); font-weight: 700; }
     .toolbar { display: flex; align-items: center; justify-content: space-between; margin: 22px 0 14px; }
     .month-label { font-weight: 700; }
-    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .calendar-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0 20px; padding: 14px 16px; background: white; border: 1px solid var(--line); border-radius: 14px; }
+    .calendar-stat { display: grid; gap: 3px; }
+    .calendar-stat + .calendar-stat { padding-left: 14px; border-left: 1px solid var(--line); }
+    .calendar-stat-label { color: var(--muted); font-size: 12px; }
+    .calendar-stat strong { color: var(--ink); font-size: 20px; line-height: 1.2; }
+    .calendar-stat strong small { font-size: 12px; font-weight: 600; }
+    .calendar-stat-note { color: #397b9d; font-size: 10px; }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
     .weekday { padding: 7px 0; color: var(--muted); font-size: 11px; }
-    .day { position: relative; border: 0; min-height: 48px; border-radius: 12px; background: transparent; color: var(--ink); }
-    .day.outside { color: #bbc0b9; }
-    .day.selected { outline: 1px solid var(--green); background: var(--green-soft); }
-    .day.today::after { content: ""; position: absolute; width: 4px; height: 4px; background: var(--green); border-radius: 50%; bottom: 5px; left: calc(50% - 2px); }
-    .day .mark { display: block; font-size: 9px; line-height: 1; margin-top: 3px; color: var(--green); }
-    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; color: var(--muted); font-size: 11px; }
+    .day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; position: relative; border: 1px solid transparent; min-height: 49px; padding: 4px 1px; border-radius: 11px; color: var(--ink); font-weight: 600; }
+    .day.level-0 { background: #f0f3f5; color: #6e7c84; }
+    .day.level-1 { background: #e3f4fa; color: #386179; }
+    .day.level-2 { background: #9fd2e8; color: #194e66; }
+    .day.level-3 { background: #176f96; color: #fff; }
+    .day.level-today { background: #eaf5fa; color: #315e76; }
+    .day.outside { opacity: .38; }
+    .day.selected { outline: 2px solid #155f82; outline-offset: 1px; }
+    .day.today { border-color: #287fa5; }
+    .day .mark { display: block; font-size: 9px; font-weight: 500; line-height: 1; color: inherit; }
+    .legend { display: flex; flex-wrap: wrap; gap: 9px 12px; margin-top: 14px; color: var(--muted); font-size: 11px; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-swatch { width: 11px; height: 11px; border-radius: 4px; }
+    .legend-swatch.level-0 { background: #f0f3f5; border: 1px solid #dfe5e9; }
+    .legend-swatch.level-1 { background: #e3f4fa; }
+    .legend-swatch.level-2 { background: #9fd2e8; }
+    .legend-swatch.level-3 { background: #176f96; }
     .settings-group { margin-top: 21px; }
     .settings-group h2 { margin-bottom: 10px; }
     .field { display: grid; gap: 6px; margin: 12px 0; }
-    .field label { color: #535b52; font-size: 12px; font-weight: 600; }
+    .field label { color: #52616b; font-size: 12px; font-weight: 600; }
     .field input, .field select { width: 100%; min-height: 45px; padding: 0 12px; border: 1px solid var(--line); border-radius: 11px; background: white; color: var(--ink); }
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .food-manage { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
     .food-manage:first-of-type { border-top: 0; }
-    .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: none; align-items: end; justify-content: center; background: rgba(20,28,20,.35); }
+    .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: none; align-items: end; justify-content: center; background: rgba(22,34,43,.35); }
     .modal-backdrop.open { display: flex; }
-    .sheet { width: min(560px, 100%); max-height: 90vh; overflow: auto; padding: 18px 18px calc(20px + env(safe-area-inset-bottom)); background: var(--bg); border-radius: 22px 22px 0 0; animation: rise .18s ease-out; }
+    .sheet { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 20px 18px calc(22px + env(safe-area-inset-bottom)); background: #fff; border-radius: 24px 24px 0 0; animation: rise .18s ease-out; }
     @keyframes rise { from { transform: translateY(20px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
     .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .sheet-head h2 { font-size: 19px; }
     .sheet-actions { display: flex; gap: 9px; margin-top: 16px; }
     .sheet-actions > * { flex: 1; }
-    .notice { padding: 10px 12px; border-radius: 12px; color: #536659; background: var(--green-soft); font-size: 12px; margin: 11px 0; }
+    .notice { padding: 10px 12px; border-radius: 12px; color: #4d6475; background: var(--green-soft); font-size: 12px; margin: 11px 0; }
     .choice-list { display: grid; gap: 8px; max-height: 43vh; overflow: auto; }
     .choice { display: flex; justify-content: space-between; gap: 10px; align-items: center; text-align: left; width: 100%; padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: white; }
     .choice small { color: var(--muted); }
-    .toast { position: fixed; z-index: 8; left: 50%; bottom: 83px; transform: translate(-50%, 10px); background: #252c25; color: white; border-radius: 99px; padding: 10px 15px; font-size: 13px; opacity: 0; pointer-events: none; transition: .18s; white-space: nowrap; }
+    .toast { position: fixed; z-index: 8; left: 50%; bottom: 83px; transform: translate(-50%, 10px); background: #26333d; color: white; border-radius: 99px; padding: 10px 15px; font-size: 13px; opacity: 0; pointer-events: none; transition: .18s; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
     .screen-note { margin-top: 12px; color: var(--muted); font-size: 12px; }
-    @media (min-width: 600px) { .app { padding-top: 30px; } .modal-backdrop { align-items: center; padding: 20px; } .sheet { border-radius: 22px; } }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(37,136,178,.3); outline-offset: 2px; }
+    @media (min-width: 600px) { .app { padding-top: 30px; } .modal-backdrop { align-items: center; padding: 20px; } .sheet { border-radius: 24px; } }
   </style>
 </head>
 <body>
   <main class="app">
-    <div class="topline"><div class="brand">meal-tracker</div><div class="eyebrow">Simple is Best</div></div>
+    <div class="topline"><div class="brand">meal-tracker</div></div>
 
     <section id="home" class="screen active" aria-labelledby="home-title">
       <div><h1 id="home-title">오늘 기록</h1><p class="subtle">먹은 것을 간단히 기록해요.</p></div>
       <div class="date-switch"><button class="icon-btn" id="prev-day" aria-label="이전 날짜">‹</button><strong id="home-date"></strong><button class="icon-btn" id="next-day" aria-label="다음 날짜">›</button><button class="secondary" id="go-today" style="margin-left:auto;min-height:36px;padding:0 11px;font-size:12px">오늘</button></div>
       <div class="card summary" id="summary"></div>
       <div class="section-head"><h2>기록</h2><span class="subtle" id="day-total"></span></div>
-      <div style="display:flex;gap:8px;margin:0 0 12px">
-        <button class="primary" id="quick-add" style="flex:1">＋ 바로 기록</button>
-        <button class="load-food-btn" id="use-saved-food" style="flex:1;padding:0 8px;border-radius:12px;font-size:12px">등록 음식 불러오기</button>
+      <div class="home-actions">
+        <button class="primary" id="quick-add"><span class="action-icon" aria-hidden="true">＋</span><span>바로 기록</span></button>
+        <button class="load-food-btn" id="use-saved-food"><span class="action-icon" aria-hidden="true">≡</span><span>음식 불러오기</span></button>
       </div>
       <div id="entries"></div>
     </section>
 
     <section id="calendar-screen" class="screen" aria-labelledby="calendar-title">
       <h1 id="calendar-title">달력</h1><p class="subtle">날짜를 눌러 식단을 확인해요.</p>
+      <div class="calendar-stats" id="calendar-stats"></div>
       <div class="toolbar"><button class="icon-btn" id="prev-month" aria-label="이전 달">‹</button><div class="month-label" id="month-label"></div><button class="icon-btn" id="next-month" aria-label="다음 달">›</button></div>
       <div id="calendar" class="calendar"></div>
-      <div class="legend"><span>● 두 목표</span><span>◐ 한 목표</span><span>○ 미달성</span><span>· 기록 없음</span></div>
-      <p class="screen-note">오늘은 하루가 끝나기 전까지 진행 중으로 표시됩니다.</p>
+      <div class="legend"><span><i class="legend-swatch level-0"></i>기록 없음</span><span><i class="legend-swatch level-1"></i>기록</span><span><i class="legend-swatch level-2"></i>목표 1개</span><span><i class="legend-swatch level-3"></i>목표 2개</span><span>오늘은 테두리</span></div>
     </section>
 
     <section id="settings" class="screen" aria-labelledby="settings-title">
@@ -146,7 +181,6 @@
         <div class="section-head" style="margin:0 0 8px"><h2>내 음식</h2><button class="primary" id="new-food" style="min-height:36px;padding:0 11px;font-size:12px">음식 등록</button></div>
         <div id="food-list"></div>
       </div>
-      <p class="screen-note">프로토타입 데이터는 이 브라우저에 저장됩니다.</p>
     </section>
   </main>
 
@@ -163,7 +197,7 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = 'meal-tracker-ux-demo-v1';
+      const STORAGE_KEY = 'meal-tracker-data-v1';
       const tags = ['아침', '점심', '저녁', '간식'];
       const today = dateKey(new Date());
       let state = loadState();
@@ -203,19 +237,38 @@
           { name: '칼로리', value: totals.kcal, goal: kcalGoal, unit: 'kcal', cls: '' },
           { name: '단백질', value: totals.protein, goal: proteinGoal, unit: 'g', cls: 'protein' }
         ];
-        document.getElementById('summary').innerHTML = metrics.map(metric => {
+        document.getElementById('summary').innerHTML = `<div class="summary-title">영양 섭취량</div>${metrics.map(metric => {
           const pct = metric.goal ? Math.min(100, metric.value / metric.goal * 100) : 0;
           const remaining = Math.max(metric.goal - metric.value, 0);
           return `<div><div class="metric-top"><span class="metric-name">${metric.name}</span><span class="metric-value">${fmt(metric.value)} / ${fmt(metric.goal,0)} ${metric.unit}</span></div><div class="track"><div class="fill ${metric.cls}" style="width:${pct}%"></div></div><div class="remaining"><span>목표 ${Math.round(pct)}%</span><span>${metric.name === '칼로리' ? '남은' : '부족한'} ${fmt(remaining)}${metric.unit}</span></div></div>`;
-        }).join('');
+        }).join('')}`;
         document.getElementById('day-total').textContent = `${fmt(totals.kcal,0)} kcal · ${fmt(totals.protein)} g`;
         const items = entriesFor(selectedDate).slice().sort((a,b) => (a.eatenAt || '00:00').localeCompare(b.eatenAt || '00:00') || (a.createdAt || '').localeCompare(b.createdAt || ''));
-        document.getElementById('entries').innerHTML = items.length ? items.map(item => `<article class="card" style="padding:13px 14px;margin-bottom:9px"><div class="food-row" style="padding:0;border:0"><time class="subtle" style="width:43px">${escapeHtml(item.eatenAt || '12:00')}</time><div class="food-info"><strong>${escapeHtml(item.name)} ${item.tag ? `<span class="tag-pill">${escapeHtml(item.tag)}</span>` : ''}</strong><small>${fmt(item.quantity)} ${escapeHtml(item.unit || '')} · 단백질 ${fmt(item.protein)}g</small></div><div class="food-kcal">${fmt(item.kcal,0)} kcal</div><button class="tiny" data-edit-entry="${item.id}">수정</button></div></article>`).join('') : `<div class="card empty" style="text-align:center;padding:22px">아직 기록이 없어요.<br><span class="subtle">음식을 등록하지 않아도 바로 기록할 수 있어요.</span></div>`;
+        const groups = [];
+        items.forEach(item => {
+          const tag = item.tag || '태그 없음';
+          const lastGroup = groups[groups.length - 1];
+          if (lastGroup && lastGroup.tag === tag) lastGroup.items.push(item);
+          else groups.push({ tag, items: [item] });
+        });
+        document.getElementById('entries').innerHTML = items.length ? groups.map(group => `<section class="entry-group"><h3 class="entry-group-title">${escapeHtml(group.tag)}</h3><div class="entry-group-list">${group.items.map(item => `<article class="entry-card"><div class="food-row entry-row"><time class="subtle entry-time">${escapeHtml(item.eatenAt || '12:00')}</time><div class="food-info"><strong>${escapeHtml(item.name)}</strong><small>${fmt(item.quantity)} ${escapeHtml(item.unit || '')} · 단백질 ${fmt(item.protein)}g</small></div><div class="food-kcal">${fmt(item.kcal,0)} kcal</div><button class="tiny" data-edit-entry="${item.id}">수정</button></div></article>`).join('')}</div></section>`).join('') : `<div class="card empty" style="text-align:center;padding:22px">아직 기록이 없어요.<br><span class="subtle">음식을 등록하지 않아도 바로 기록할 수 있어요.</span></div>`;
         document.querySelectorAll('[data-edit-entry]').forEach(button => button.addEventListener('click', () => openEntryEdit(button.dataset.editEntry)));
       }
       function renderCalendar() {
         const y = shownMonth.getFullYear(), m = shownMonth.getMonth();
         document.getElementById('month-label').textContent = `${y}년 ${m+1}월`;
+        const monthPrefix = `${y}-${String(m+1).padStart(2,'0')}-`;
+        const loggedDays = new Set(state.entries.filter(entry => entry.date.startsWith(monthPrefix)).map(entry => entry.date)).size;
+        const hasLoggedToday = entriesFor(today).length > 0;
+        let streakCursor = parseDate(today);
+        if (!hasLoggedToday) streakCursor.setDate(streakCursor.getDate() - 1);
+        let streak = 0;
+        while (entriesFor(dateKey(streakCursor)).length > 0) {
+          streak++;
+          streakCursor.setDate(streakCursor.getDate() - 1);
+        }
+        const streakNote = hasLoggedToday ? '오늘 기록 완료' : (streak > 0 ? '오늘 기록하면 이어져요' : '오늘 기록을 시작해 보세요');
+        document.getElementById('calendar-stats').innerHTML = `<div class="calendar-stat"><span class="calendar-stat-label">이번 달 기록</span><strong>${loggedDays}<small>일</small></strong></div><div class="calendar-stat"><span class="calendar-stat-label">연속 기록</span><strong>${streak}<small>일</small></strong><span class="calendar-stat-note">${streakNote}</span></div>`;
         const first = new Date(y,m,1), start = new Date(y,m,1-first.getDay());
         let html = ['일','월','화','수','목','금','토'].map(day => `<div class="weekday">${day}</div>`).join('');
         for (let i=0; i<42; i++) {
@@ -223,13 +276,18 @@
           const key = dateKey(d), inMonth = d.getMonth() === m;
           const items = entriesFor(key);
           const totals = totalsFor(key);
-          let mark = key === today ? '진행' : '·';
-          if (items.length && key !== today) {
+          let level = 0, status = '기록 없음', mark = '·';
+          if (key === today) {
+            level = 'today'; status = '오늘 진행 중'; mark = '진행';
+          } else if (items.length) {
             const kcalOK = totals.kcal <= Number(state.goals.kcal) && totals.kcal > 0;
             const proteinOK = totals.protein >= Number(state.goals.protein);
-            mark = kcalOK && proteinOK ? '●' : (kcalOK || proteinOK ? '◐' : '○');
+            const goalCount = Number(kcalOK) + Number(proteinOK);
+            level = goalCount === 2 ? 3 : goalCount === 1 ? 2 : 1;
+            status = goalCount === 2 ? '두 목표 달성' : goalCount === 1 ? '목표 하나 달성' : '기록 있음';
+            mark = goalCount === 2 ? '2/2' : goalCount === 1 ? '1/2' : '기록';
           }
-          html += `<button class="day ${inMonth?'':'outside'} ${key===selectedDate?'selected':''} ${key===today?'today':''}" data-date="${key}">${d.getDate()}<span class="mark">${key===today && key===selectedDate ? '진행' : mark}</span></button>`;
+          html += `<button class="day level-${level} ${inMonth?'':'outside'} ${key===selectedDate?'selected':''} ${key===today?'today':''}" data-date="${key}" aria-label="${dateLabel(key)}, ${status}">${d.getDate()}<span class="mark">${mark}</span></button>`;
         }
         document.getElementById('calendar').innerHTML = html;
         document.querySelectorAll('[data-date]').forEach(button => button.addEventListener('click', () => { selectedDate = button.dataset.date; showScreen('home'); render(); }));
@@ -323,7 +381,7 @@
       function openFoodForm(foodId=null) {
         editingFoodId = foodId;
         const food = state.foods.find(item => item.id === foodId);
-        openModal(`<div class="sheet-head"><h2 id="modal-title">${food ? '음식 수정' : '음식 등록'}</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><form id="food-form"><div class="field"><label for="food-name">음식 이름</label><input id="food-name" required value="${escapeHtml(food?.name || '')}" placeholder="예: 계란"></div><div class="field"><label for="food-unit">기록 단위</label><input id="food-unit" required value="${escapeHtml(food?.unit || '개')}" placeholder="개, 스쿱, 100g, 팩"></div><div class="input-row"><div class="field"><label for="food-kcal">단위당 칼로리 (kcal)</label><input id="food-kcal" type="number" min="0" step="any" required value="${food?.kcal ?? ''}"></div><div class="field"><label for="food-protein">단위당 단백질 (g)</label><input id="food-protein" type="number" min="0" step="any" required value="${food?.protein ?? ''}"></div></div><div class="notice">등록할 때 수량은 입력하지 않아요. 기록할 때 먹은 개수를 입력하면 단위당 영양값으로 계산해요.</div><button type="button" class="secondary wide" id="ocr-demo">▣ 성분표 수치 가져오기 (흐름 미리보기)</button><p class="screen-note">OCR은 실제로 연결되지 않았으며, 예시 수치는 직접 확인·수정해야 합니다.</p><div class="sheet-actions"><button type="button" class="secondary" data-close>취소</button><button type="submit" class="primary">저장</button></div></form>${food ? '<button class="danger-btn wide" id="delete-food" style="margin-top:9px">음식 삭제</button>' : ''}`);
+        openModal(`<div class="sheet-head"><h2 id="modal-title">${food ? '음식 수정' : '음식 등록'}</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><form id="food-form"><div class="field"><label for="food-name">음식 이름</label><input id="food-name" required value="${escapeHtml(food?.name || '')}" placeholder="예: 계란"></div><div class="field"><label for="food-unit">기록 단위</label><input id="food-unit" required value="${escapeHtml(food?.unit || '개')}" placeholder="개, 스쿱, 100g, 팩"></div><div class="input-row"><div class="field"><label for="food-kcal">단위당 칼로리 (kcal)</label><input id="food-kcal" type="number" min="0" step="any" required value="${food?.kcal ?? ''}"></div><div class="field"><label for="food-protein">단위당 단백질 (g)</label><input id="food-protein" type="number" min="0" step="any" required value="${food?.protein ?? ''}"></div></div><div class="notice">등록할 때 수량은 입력하지 않아요. 식단에 불러와 기록할 때 먹은 양을 입력해요.</div><div class="sheet-actions"><button type="button" class="secondary" data-close>취소</button><button type="submit" class="primary">저장</button></div></form>${food ? '<button class="danger-btn wide" id="delete-food" style="margin-top:9px">음식 삭제</button>' : ''}`);
         document.querySelectorAll('[data-close]').forEach(button => button.onclick = closeModal);
         document.getElementById('food-form').onsubmit = event => {
           event.preventDefault();
@@ -333,7 +391,6 @@
           save(); closeModal(); render();
           toast(food ? '음식 정보를 수정했어요.' : '재사용 음식으로 저장했어요.');
         };
-        document.getElementById('ocr-demo').onclick = () => { document.getElementById('food-kcal').value = 110; document.getElementById('food-protein').value = 23; toast('예시 수치예요. 선택한 단위 기준으로 확인해 주세요.'); };
         const deleteButton = document.getElementById('delete-food');
         if (deleteButton) deleteButton.onclick = () => {
           if (!confirm('음식을 목록에서 삭제할까요? 기존 식단 기록은 유지됩니다.')) return;
