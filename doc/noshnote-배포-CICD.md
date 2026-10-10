@@ -22,6 +22,7 @@ GitHub APK와 미래 Play 배포 앱의 앱 서명 키는 동일하게 유지한
 - 버전·서명·체크섬 검증이 실패하면 이후 배포 단계를 실행하지 않는다. 초안 생성 중 통신 장애로 파일 첨부가 일부 실패해도 공개되지 않으며 같은 태그의 실행을 다시 시도할 수 있다.
 - 같은 태그를 재실행하면 기존 **초안**의 산출물을 갱신한다. 이미 공개한 Release는 덮어쓰지 않는다.
 - 기존 Compose 기기 테스트 및 실제 카메라 OCR 품질 확인은 이 자동 검증에 포함되지 않는다. 공개 전 기기에서 주요 화면, 저장·조회 및 OCR을 확인한다.
+- 빌드·서명 성공은 앱 실행 성공을 보장하지 않는다. Release APK를 새로 설치해 첫 화면까지 정상 진입하는지 확인한다. `v1.0`에서 발견한 시작 시 `IllegalAccessError`는 Kotlin 클래스 상속 관계가 부분 최적화 중 서로 다른 패키지로 이동한 문제로, `v1.0.1`부터 `packageScope` 없이 전체 R8 최적화를 사용한다.
 
 ## 3. 빌드 환경
 
@@ -75,14 +76,14 @@ Base64는 파일의 텍스트 표현이며 암호화가 아니다. 이 명령은
 1. 작업 브랜치에서 변경하고 로컬에서 필요한 검증을 수행한다.
 2. 브랜치를 푸시하고 `main` 대상 PR을 만든다. CI의 `Android 검증` 결과와 변경 내용을 확인한다.
 3. PR을 병합하고 `main` CI 결과를 확인한다.
-4. `app/build.gradle.kts`의 `versionName`과 `versionCode`를 정리한다. 버전 변경도 PR로 병합한다. 현재 값은 `1.0`과 `1`이며 첫 태그는 `v1.0`으로 만들 수 있다. 이후 배포마다 `versionCode`를 증가시킨다.
+4. `app/build.gradle.kts`의 `versionName`과 `versionCode`를 정리한다. 버전 변경도 PR로 병합한다. 현재 값은 `1.0.1`과 `2`다. 이후 배포마다 `versionCode`를 증가시킨다.
 5. 검증된 `main` 커밋에 버전과 일치하는 태그를 만들어 푸시한다.
 
 ```bash
 git switch main
 git pull --ff-only origin main
-git tag -a v1.0 -m "NoshNote 1.0 배포"
-git push origin v1.0
+git tag -a v1.0.1 -m "NoshNote 1.0.1 배포"
+git push origin v1.0.1
 ```
 
 6. Actions의 Android Release 실행 결과와 Releases의 초안을 확인한다.
