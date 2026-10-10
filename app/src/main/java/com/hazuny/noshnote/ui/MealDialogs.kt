@@ -2,6 +2,13 @@ package com.hazuny.noshnote.ui
 
 import com.hazuny.noshnote.R
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -89,6 +96,10 @@ private fun TimePickerField(
     modifier: Modifier = Modifier,
 ) {
     var showPicker by remember { mutableStateOf(false) }
+    val pickerVisibility = remember { MutableTransitionState(false) }
+    LaunchedEffect(showPicker) {
+        pickerVisibility.targetState = showPicker
+    }
     Column(modifier = modifier) {
         AutoFitText(uiText(R.string.eaten_time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(4.dp))
@@ -100,7 +111,7 @@ private fun TimePickerField(
         }
     }
 
-    if (showPicker) {
+    if (showPicker || pickerVisibility.currentState || pickerVisibility.targetState) {
         val parsedTime = runCatching { LocalTime.parse(time) }.getOrElse { LocalTime.now() }
         val roundedMinute = ((parsedTime.minute + 2) / 5) * 5
         val initialTime = if (roundedMinute == 60) {
@@ -119,82 +130,95 @@ private fun TimePickerField(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter,
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                AnimatedVisibility(
+                    visibleState = pickerVisibility,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    enter = slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = tween(durationMillis = 280),
+                    ) + fadeIn(animationSpec = tween(durationMillis = 180)),
+                    exit = slideOutVertically(
+                        targetOffsetY = { it },
+                        animationSpec = tween(durationMillis = 240),
+                    ) + fadeOut(animationSpec = tween(durationMillis = 160)),
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(horizontal = 24.dp)
-                            .padding(top = 8.dp, bottom = 12.dp),
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                     ) {
-                        Box(
+                        Column(
                             modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(bottom = 12.dp)
-                                .width(32.dp)
-                                .height(4.dp)
-                                .background(MaterialTheme.colorScheme.outline, RoundedCornerShape(50)),
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                .fillMaxWidth()
+                                .navigationBarsPadding()
+                                .padding(horizontal = 24.dp)
+                                .padding(top = 8.dp, bottom = 12.dp),
                         ) {
-                            TimeWheel(
-                                label = uiText(R.string.period_label),
-                                values = listOf(uiText(R.string.period_am), uiText(R.string.period_pm)),
-                                selectedIndex = periodIndex,
-                                onSelectedIndexChange = { periodIndex = it },
-                                testTag = "time_wheel_period",
-                                modifier = Modifier.weight(1.15f),
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(bottom = 12.dp)
+                                    .width(32.dp)
+                                    .height(4.dp)
+                                    .background(MaterialTheme.colorScheme.outline, RoundedCornerShape(50)),
                             )
-                            TimeWheel(
-                                label = uiText(R.string.hour_label),
-                                values = (1..12).map(Int::toString),
-                                selectedIndex = hourIndex,
-                                onSelectedIndexChange = { hourIndex = it },
-                                testTag = "time_wheel_hour",
-                                modifier = Modifier.weight(0.85f),
-                            )
-                            TimeWheel(
-                                label = uiText(R.string.minute_label),
-                                values = (0..55 step 5).map { it.toString().padStart(2, '0') },
-                                selectedIndex = minuteIndex,
-                                onSelectedIndexChange = { minuteIndex = it },
-                                testTag = "time_wheel_minute",
-                                modifier = Modifier.weight(0.85f),
-                            )
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TextButton(
-                                onClick = { showPicker = false },
-                                modifier = Modifier.testTag("time_picker_cancel"),
-                            ) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
-                            TextButton(
-                                onClick = {
-                                    val hour12 = hourIndex + 1
-                                    val hour24 = when {
-                                        periodIndex == 0 && hour12 == 12 -> 0
-                                        periodIndex == 0 -> hour12
-                                        hour12 == 12 -> 12
-                                        else -> hour12 + 12
-                                    }
-                                    onTimeChange(
-                                        LocalTime.of(hour24, minuteIndex * 5)
-                                            .format(DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)),
-                                    )
-                                    showPicker = false
-                                },
-                                modifier = Modifier.testTag("time_picker_confirm"),
-                            ) { AutoFitText(uiText(R.string.confirm), maxLines = 1) }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                TimeWheel(
+                                    label = uiText(R.string.period_label),
+                                    values = listOf(uiText(R.string.period_am), uiText(R.string.period_pm)),
+                                    selectedIndex = periodIndex,
+                                    onSelectedIndexChange = { periodIndex = it },
+                                    testTag = "time_wheel_period",
+                                    modifier = Modifier.weight(1.15f),
+                                )
+                                TimeWheel(
+                                    label = uiText(R.string.hour_label),
+                                    values = (1..12).map(Int::toString),
+                                    selectedIndex = hourIndex,
+                                    onSelectedIndexChange = { hourIndex = it },
+                                    testTag = "time_wheel_hour",
+                                    modifier = Modifier.weight(0.85f),
+                                )
+                                TimeWheel(
+                                    label = uiText(R.string.minute_label),
+                                    values = (0..55 step 5).map { it.toString().padStart(2, '0') },
+                                    selectedIndex = minuteIndex,
+                                    onSelectedIndexChange = { minuteIndex = it },
+                                    testTag = "time_wheel_minute",
+                                    modifier = Modifier.weight(0.85f),
+                                )
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TextButton(
+                                    onClick = { showPicker = false },
+                                    modifier = Modifier.testTag("time_picker_cancel"),
+                                ) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
+                                TextButton(
+                                    onClick = {
+                                        val hour12 = hourIndex + 1
+                                        val hour24 = when {
+                                            periodIndex == 0 && hour12 == 12 -> 0
+                                            periodIndex == 0 -> hour12
+                                            hour12 == 12 -> 12
+                                            else -> hour12 + 12
+                                        }
+                                        onTimeChange(
+                                            LocalTime.of(hour24, minuteIndex * 5)
+                                                .format(DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)),
+                                        )
+                                        showPicker = false
+                                    },
+                                    modifier = Modifier.testTag("time_picker_confirm"),
+                                ) { AutoFitText(uiText(R.string.confirm), maxLines = 1) }
+                            }
                         }
                     }
                 }

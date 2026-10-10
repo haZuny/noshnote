@@ -15,7 +15,7 @@
 | 언어 | Kotlin | Android 앱 구현 언어 |
 | UI | Jetpack Compose + Material 3 | 네이티브 화면과 앱 테마 구현 |
 | UI 문자열·언어 | Android string resources (`values/`, `values-<locale>/`) | 한국어 기본 리소스, 영어·중국어(간체)·일본어·프랑스어·스페인어·러시아어·독일어·포르투갈어(브라질)·인도네시아어 번역. 시스템 언어에 맞춰 자동 선택하고 앱 내 언어 선택은 제공하지 않음 |
-| 화면 이동 | Navigation Compose | 홈·달력·설정 3개 최상위 화면 이동 |
+| 화면 이동 | Navigation Compose | 홈·달력·설정 3개 최상위 화면 이동 및 방향에 맞춘 좌우 페이지 전환 |
 | 앱 구조 | UI/Data 계층, 화면별 ViewModel, Repository | 단방향 UI 상태 흐름을 사용하고 ViewModel 상태는 `StateFlow`로 제공 |
 | 비동기·반응형 데이터 | Kotlin Coroutines + Flow | 데이터 조회 및 UI 상태 전달 |
 | 구조화된 로컬 데이터 | Room (SQLite 기반) | 식단 기록, 음식 템플릿, 현재 목표 저장 |

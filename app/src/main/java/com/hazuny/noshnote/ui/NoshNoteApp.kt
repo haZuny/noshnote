@@ -1,5 +1,9 @@
 package com.hazuny.noshnote.ui
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.Alignment
@@ -33,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -54,6 +59,31 @@ private val mainDestinations = listOf(
     MainDestination("calendar", R.string.nav_calendar, Icons.Default.DateRange),
     MainDestination("settings", R.string.nav_settings, Icons.Default.Settings),
 )
+
+private fun pageDirection(
+    initialState: NavBackStackEntry,
+    targetState: NavBackStackEntry,
+): AnimatedContentTransitionScope.SlideDirection {
+    val initialIndex = mainDestinations.indexOfFirst { it.route == initialState.destination.route }
+    val targetIndex = mainDestinations.indexOfFirst { it.route == targetState.destination.route }
+    return if (targetIndex >= initialIndex) {
+        AnimatedContentTransitionScope.SlideDirection.Left
+    } else {
+        AnimatedContentTransitionScope.SlideDirection.Right
+    }
+}
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.pageEnterTransition() =
+    slideIntoContainer(
+        pageDirection(initialState, targetState),
+        animationSpec = tween(durationMillis = 280),
+    ) + fadeIn(animationSpec = tween(durationMillis = 180))
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.pageExitTransition() =
+    slideOutOfContainer(
+        pageDirection(initialState, targetState),
+        animationSpec = tween(durationMillis = 280),
+    ) + fadeOut(animationSpec = tween(durationMillis = 180))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,6 +173,12 @@ fun NoshNoteApp(viewModel: MealViewModel) {
         NavHost(
             navController = navController,
             startDestination = "home",
+            enterTransition = { pageEnterTransition() },
+            exitTransition = { pageExitTransition() },
+            popEnterTransition = { pageEnterTransition() },
+            popExitTransition = { pageExitTransition() },
+            predictivePopEnterTransition = { _ -> pageEnterTransition() },
+            predictivePopExitTransition = { _ -> pageExitTransition() },
             modifier = Modifier
                 .padding(innerPadding)
                 .pointerInput(currentRoute, swipeThresholdPx) {
