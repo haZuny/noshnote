@@ -137,4 +137,18 @@
     <string name="period_pm">오후</string>
     <string name="hour_label">시</string>
     <string name="minute_label">분</string>
+    <string name="backup_title">데이터 백업</string>
+    <string name="backup_description">식단 기록, 음식 템플릿, 목표를 JSON 파일로 저장하거나 복원합니다.</string>
+    <string name="backup_export">JSON 내보내기</string>
+    <string name="backup_import">JSON 가져오기</string>
+    <string name="backup_export_success">백업 파일을 저장했습니다.</string>
+    <string name="backup_import_success">데이터를 복원했습니다.</string>
+    <string name="backup_operation_failed">백업 작업을 완료하지 못했습니다.</string>
+    <string name="backup_import_failed">백업 파일을 읽을 수 없습니다. NoshNote JSON 백업 파일인지 확인해 주세요.</string>
+    <string name="backup_import_confirm_title">앱 데이터를 교체할까요?</string>
+    <string name="backup_import_summary">식단 기록 %1$d개, 음식 템플릿 %2$d개, 목표 %3$s</string>
+    <string name="backup_goal_included">포함</string>
+    <string name="backup_goal_not_included">미포함</string>
+    <string name="backup_replace_warning">가져오면 이 기기의 모든 식단 기록, 음식 템플릿, 현재 목표가 교체됩니다.</string>
+    <string name="backup_replace">데이터 교체</string>
 </resources>

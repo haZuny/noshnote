@@ -18,4 +18,18 @@
     <string name="period_pm">nachm.</string>
     <string name="hour_label">Std.</string>
     <string name="minute_label">Min.</string>
+    <string name="backup_title">Datensicherung</string>
+    <string name="backup_description">Speichere deine Mahlzeiten, Essensvorlagen und dein Ziel als JSON-Datei oder stelle sie wieder her.</string>
+    <string name="backup_export">JSON exportieren</string>
+    <string name="backup_import">JSON importieren</string>
+    <string name="backup_export_success">Sicherungsdatei gespeichert.</string>
+    <string name="backup_import_success">Daten wiederhergestellt.</string>
+    <string name="backup_operation_failed">Die Datensicherung konnte nicht abgeschlossen werden.</string>
+    <string name="backup_import_failed">Datei konnte nicht gelesen werden. Prüfe, ob es eine NoshNote-JSON-Sicherung ist.</string>
+    <string name="backup_import_confirm_title">App-Daten ersetzen?</string>
+    <string name="backup_import_summary">%1$d Mahlzeiteneinträge, %2$d Essensvorlagen, Ziel: %3$s</string>
+    <string name="backup_goal_included">enthalten</string>
+    <string name="backup_goal_not_included">nicht enthalten</string>
+    <string name="backup_replace_warning">Beim Import werden alle Mahlzeiteneinträge, Essensvorlagen und das aktuelle Ziel auf diesem Gerät ersetzt.</string>
+    <string name="backup_replace">Daten ersetzen</string>
 </resources>

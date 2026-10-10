@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hazuny.noshnote.data.DailyGoalEntity
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.data.MealBackupData
 import com.hazuny.noshnote.data.MealRepository
 import java.time.LocalDate
 import kotlinx.coroutines.flow.SharingStarted
@@ -66,6 +67,12 @@ class MealViewModel(private val repository: MealRepository) : ViewModel() {
             repository.saveGoal(calories, protein, LocalDate.now().toString())
         }
     }
+
+    suspend fun exportBackupJson(): String = repository.exportBackupJson()
+
+    suspend fun parseBackupJson(json: String): MealBackupData = repository.parseBackupJson(json)
+
+    suspend fun replaceAllDataFromBackup(data: MealBackupData) = repository.replaceAllDataFromBackup(data)
 
     fun deleteEntry(id: Long) {
         viewModelScope.launch { repository.deleteEntry(id) }

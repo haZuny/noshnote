@@ -18,4 +18,18 @@
     <string name="period_pm">PM</string>
     <string name="hour_label">Heure</string>
     <string name="minute_label">Min</string>
+    <string name="backup_title">Sauvegarde des données</string>
+    <string name="backup_description">Enregistrez ou restaurez vos repas, modèles d’aliments et objectif dans un fichier JSON.</string>
+    <string name="backup_export">Exporter en JSON</string>
+    <string name="backup_import">Importer un JSON</string>
+    <string name="backup_export_success">Fichier de sauvegarde enregistré.</string>
+    <string name="backup_import_success">Données restaurées.</string>
+    <string name="backup_operation_failed">Impossible de terminer la sauvegarde.</string>
+    <string name="backup_import_failed">Impossible de lire ce fichier. Vérifiez qu’il s’agit d’une sauvegarde JSON NoshNote.</string>
+    <string name="backup_import_confirm_title">Remplacer les données de l’application ?</string>
+    <string name="backup_import_summary">%1$d repas, %2$d modèles d’aliments, objectif : %3$s</string>
+    <string name="backup_goal_included">inclus</string>
+    <string name="backup_goal_not_included">non inclus</string>
+    <string name="backup_replace_warning">L’importation remplacera tous les repas, les modèles d’aliments et l’objectif actuel de cet appareil.</string>
+    <string name="backup_replace">Remplacer les données</string>
 </resources>

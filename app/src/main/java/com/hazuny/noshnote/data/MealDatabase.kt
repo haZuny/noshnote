@@ -59,6 +59,9 @@ data class DailyGoalEntity(
 
 @Dao
 interface MealDao {
+    @Query("SELECT * FROM meal_entries ORDER BY dateKey ASC, eatenAtEpochMillis ASC, id ASC")
+    suspend fun getAllEntriesForBackup(): List<MealEntryEntity>
+
     @Query("SELECT * FROM meal_entries ORDER BY dateKey DESC, eatenAtEpochMillis ASC, id ASC")
     fun observeAllEntries(): Flow<List<MealEntryEntity>>
 
@@ -71,14 +74,23 @@ interface MealDao {
     @Insert
     suspend fun insertEntry(entry: MealEntryEntity)
 
+    @Insert
+    suspend fun insertEntries(entries: List<MealEntryEntity>)
+
     @Update
     suspend fun updateEntry(entry: MealEntryEntity)
 
     @Query("DELETE FROM meal_entries WHERE id = :entryId")
     suspend fun deleteEntry(entryId: Long)
 
+    @Query("DELETE FROM meal_entries")
+    suspend fun deleteAllEntries()
+
     @Query("SELECT * FROM food_templates ORDER BY name COLLATE NOCASE ASC")
     fun observeFoodTemplates(): Flow<List<FoodTemplateEntity>>
+
+    @Query("SELECT * FROM food_templates ORDER BY name COLLATE NOCASE ASC")
+    suspend fun getAllFoodTemplatesForBackup(): List<FoodTemplateEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveFoodTemplate(food: FoodTemplateEntity)
@@ -86,8 +98,22 @@ interface MealDao {
     @Query("DELETE FROM food_templates WHERE id = :foodId")
     suspend fun deleteFoodTemplate(foodId: Long)
 
+    @Query("DELETE FROM food_templates")
+    suspend fun deleteAllFoodTemplates()
+
     @Query("SELECT * FROM daily_goals ORDER BY effectiveFromDate DESC, id DESC LIMIT 1")
     fun observeGoal(): Flow<DailyGoalEntity?>
+
+    @Query("SELECT * FROM daily_goals ORDER BY effectiveFromDate DESC, id DESC LIMIT 1")
+    suspend fun getGoalForBackup(): DailyGoalEntity?
+
+    @Transaction
+    suspend fun getBackupData(): MealBackupData = MealBackupData(
+        exportedAtEpochMillis = System.currentTimeMillis(),
+        entries = getAllEntriesForBackup(),
+        foodTemplates = getAllFoodTemplatesForBackup(),
+        goal = getGoalForBackup(),
+    )
 
     @Query("DELETE FROM daily_goals")
     suspend fun deleteAllGoals()
@@ -100,6 +126,19 @@ interface MealDao {
         deleteAllGoals()
         saveGoal(goal.copy(id = 1L))
     }
+
+    @Transaction
+    suspend fun replaceAllData(data: MealBackupData) {
+        deleteAllEntries()
+        deleteAllFoodTemplates()
+        deleteAllGoals()
+        if (data.entries.isNotEmpty()) insertEntries(data.entries.map { it.copy(id = 0L) })
+        if (data.foodTemplates.isNotEmpty()) saveFoodTemplates(data.foodTemplates.map { it.copy(id = 0L) })
+        data.goal?.let { saveGoal(it.copy(id = 1L)) }
+    }
+
+    @Insert
+    suspend fun saveFoodTemplates(foods: List<FoodTemplateEntity>)
 }
 
 @Database(

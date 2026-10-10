@@ -18,4 +18,18 @@
     <string name="period_pm">p. m.</string>
     <string name="hour_label">Hora</string>
     <string name="minute_label">Min</string>
+    <string name="backup_title">Copia de seguridad</string>
+    <string name="backup_description">Guarda o restaura tus registros, plantillas de alimentos y objetivo en un archivo JSON.</string>
+    <string name="backup_export">Exportar JSON</string>
+    <string name="backup_import">Importar JSON</string>
+    <string name="backup_export_success">Archivo de copia guardado.</string>
+    <string name="backup_import_success">Datos restaurados.</string>
+    <string name="backup_operation_failed">No se pudo completar la copia de seguridad.</string>
+    <string name="backup_import_failed">No se pudo leer el archivo. Comprueba que sea una copia JSON de NoshNote.</string>
+    <string name="backup_import_confirm_title">¿Reemplazar los datos de la aplicación?</string>
+    <string name="backup_import_summary">%1$d registros, %2$d plantillas de alimentos, objetivo: %3$s</string>
+    <string name="backup_goal_included">incluido</string>
+    <string name="backup_goal_not_included">no incluido</string>
+    <string name="backup_replace_warning">Al importar, se reemplazarán todos los registros, las plantillas de alimentos y el objetivo actual de este dispositivo.</string>
+    <string name="backup_replace">Reemplazar datos</string>
 </resources>
