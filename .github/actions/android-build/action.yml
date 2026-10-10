@@ -1,0 +1,21 @@
+name: Android 빌드 환경
+description: 저장소의 JDK와 Android SDK 기준으로 빌드 도구를 준비한다.
+runs:
+  using: composite
+  steps:
+    - name: JDK 17 및 Gradle 캐시 준비
+      uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+      with:
+        distribution: temurin
+        java-version: '17'
+        cache: gradle
+        cache-dependency-path: |
+          **/*.gradle.kts
+          gradle/libs.versions.toml
+          gradle/wrapper/gradle-wrapper.properties
+
+    - name: Android SDK 준비
+      uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+      with:
+        packages: platform-tools platforms;android-37.0 build-tools;36.0.0
+        log-accepted-android-sdk-licenses: false

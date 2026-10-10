@@ -128,7 +128,7 @@
     <string name="date_pattern">M월 d일 EEEE</string>
     <string name="month_pattern">yyyy년 M월</string>
     <string name="date_year">%1$d년</string>
-    <string name="date_month">%1$d월</string>
+    <string name="date_month">%1$s</string>
     <string name="unit_serving">인분</string>
     <string name="unit_piece">개</string>
     <string name="confirm">확인</string>

@@ -42,6 +42,15 @@
 
 생성되는 APK는 `app/build/outputs/apk/debug/app-debug.apk`에 있습니다.
 
+## CI 및 APK 배포
+
+- `main` 대상 PR과 `main` 푸시에서 GitHub Actions가 단위 테스트, Android Lint, Debug·Release APK 및 Release AAB 빌드를 확인합니다.
+- `main`에 병합된 커밋에 `v<versionName>` 태그를 푸시하면 같은 검증을 통과한 뒤 서명된 APK·AAB를 만들고 **GitHub Release 초안**을 생성합니다.
+- 초안의 파일을 확인한 뒤 직접 Publish하면 사용자가 APK를 다운로드할 수 있습니다. Play Store 출시는 같은 앱 서명 키를 등록하고 AAB를 업로드하는 흐름으로 준비합니다.
+- 키 파일과 서명 비밀번호는 Repository Actions Secrets의 `KEY`, `KEY_PW`, `KEY_ALIAS_NAME`, `KEY_ALIAS_PW`에서 읽습니다.
+
+버전 변경, 태그 발행, Secrets 설정 및 Play 준비 절차는 [배포 및 CI/CD 안내](doc/noshnote-배포-CICD.md)를 참고하세요.
+
 ## 저장소 구조
 
 ```text
@@ -54,6 +63,7 @@ app/src/main/java/com/hazuny/noshnote/
 doc/
 ├── noshnote-PRD.md
 ├── noshnote-기술스펙.md
+├── noshnote-배포-CICD.md
 └── noshnote-디자인-프로토타입.html
 ```
 
@@ -61,6 +71,7 @@ doc/
 
 - [제품 요구사항 문서(PRD)](doc/noshnote-PRD.md)
 - [기술 스펙](doc/noshnote-기술스펙.md)
+- [배포 및 CI/CD 안내](doc/noshnote-배포-CICD.md)
 - [디자인 프로토타입](doc/noshnote-디자인-프로토타입.html)
 - [프로젝트 작업 지침](AGENTS.md)
 

@@ -4,6 +4,19 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val releaseSigningValues = mapOf(
+    "NOSHNOTE_KEYSTORE_PATH" to providers.environmentVariable("NOSHNOTE_KEYSTORE_PATH").orNull,
+    "NOSHNOTE_KEYSTORE_PASSWORD" to providers.environmentVariable("NOSHNOTE_KEYSTORE_PASSWORD").orNull,
+    "NOSHNOTE_KEY_ALIAS" to providers.environmentVariable("NOSHNOTE_KEY_ALIAS").orNull,
+    "NOSHNOTE_KEY_PASSWORD" to providers.environmentVariable("NOSHNOTE_KEY_PASSWORD").orNull,
+)
+val hasReleaseSigning = releaseSigningValues.values.any { it != null }
+if (hasReleaseSigning) {
+    require(releaseSigningValues.values.all { !it.isNullOrEmpty() }) {
+        "릴리스 서명 환경변수 네 항목을 모두 설정해야 합니다."
+    }
+}
+
 android {
     namespace = "com.hazuny.noshnote"
     compileSdk {
@@ -20,8 +33,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseSigningValues.getValue("NOSHNOTE_KEYSTORE_PATH")!!)
+                storePassword = releaseSigningValues.getValue("NOSHNOTE_KEYSTORE_PASSWORD")
+                keyAlias = releaseSigningValues.getValue("NOSHNOTE_KEY_ALIAS")
+                keyPassword = releaseSigningValues.getValue("NOSHNOTE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // PR 검증에는 키가 필요 없고, 배포 작업에서만 실제 서명 정보를 전달한다.
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")

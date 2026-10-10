@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +70,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
 ) {
     val date = LocalDate.parse(dateKey)
+    val locale = LocalConfiguration.current.locales[0]
     val dateEntries = remember(entries, dateKey) { entries.filter { it.dateKey == dateKey }.sortedBy { it.eatenAtEpochMillis } }
     val groups = remember(dateEntries) { groupAdjacentEntries(dateEntries) }
     var showRecordDialog by remember { mutableStateOf(false) }
@@ -97,7 +99,7 @@ fun HomeScreen(
                     modifier = Modifier.size(48.dp),
                 ) { Text("‹", fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center) }
                 AutoFitText(
-                    text = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault())),
+                    text = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), locale)),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleMedium,

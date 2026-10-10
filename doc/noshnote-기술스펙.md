@@ -122,6 +122,7 @@ Room DAO ── Room Database (기기 내부 SQLite)
 
 - UI 문자열은 `res/values/strings.xml`의 한국어 기본 리소스와 `values-en`, `values-zh-rCN`, `values-ja`, `values-fr`, `values-es`, `values-ru`, `values-de`, `values-pt-rBR`, `values-in` 번역 리소스로 관리한다.
 - Android의 기본 리소스 선택 규칙에 따라 시스템 언어와 일치하는 리소스를 자동 선택한다. 별도 앱 언어 선택 메뉴나 앱별 언어 오버라이드는 두지 않으며, 미지원 언어는 한국어 기본값을 사용한다.
+- Compose의 문자열 조회에는 `stringResource` 또는 `LocalResources`를 사용하고 날짜·월·요일 표시에는 `LocalConfiguration`의 언어를 사용한다. OCR·설정의 비동기 상태 메시지는 리소스 ID로 보관해 표시할 때 현재 언어로 해석한다.
 - 식사 태그는 기존 Room 데이터에 저장된 한국어 키를 유지하고, 화면에 표시할 때만 현재 언어로 변환한다. 사용자가 직접 입력한 음식명과 단위는 입력한 값을 그대로 보존한다.
 - 목표 수정 시 과거 날짜의 달력 상태도 수정된 현재 목표 기준으로 다시 계산한다. 과거 목표 이력은 사용자 기능으로 사용하지 않는다.
 - Android 자동 백업과 기기 간 전송은 Manifest 및 데이터 추출 규칙에서 비활성화한다. 설정의 JSON 내보내기·가져오기는 사용자가 선택한 파일을 통해 로컬 데이터를 이동한다.
@@ -141,3 +142,12 @@ Room DAO ── Room Database (기기 내부 SQLite)
 - 달력 판정은 목표와 같은 경계값, 목표 없음, 기록 없음, 오늘 진행 중을 구분한다.
 - 기기/에뮬레이터 통합 테스트에서는 Room 저장·재조회, 바로 기록과 템플릿 사용, 권한 거부 후 수동 입력을 확인한다.
 - 카메라 프레임 안정화와 실제 기기 OCR 품질은 자동 파서 테스트와 분리해 지원 기기에서 수동 검증한다.
+
+## 10. 빌드 및 배포
+
+- GitHub Actions CI는 `main` 대상 PR과 `main` 푸시에서 기존 단위 테스트, Lint, Debug·Release APK 및 Release AAB 빌드를 실행한다. CI는 서명 비밀값 없이 Release 산출물을 빌드한다.
+- `main`에 포함된 커밋의 `v<versionName>` 태그를 푸시하면 배포를 시작한다. 태그의 코드 검증 후에만 실제 서명 키로 APK·AAB를 빌드하며, 버전과 서명 검증이 끝나면 GitHub Release 초안을 생성한다. 공개는 개발자가 파일과 릴리스 내용을 확인한 뒤 직접 수행한다.
+- GitHub APK와 미래 Play 배포 앱은 같은 앱 서명 키를 사용한다. 현재는 AAB 업로드에도 같은 키를 사용하며 별도 업로드 키는 필수로 두지 않는다. Play App Signing 등록 시 직접 보유한 앱 서명 키를 제공해야 한다.
+- 키 파일과 비밀번호는 Repository Actions Secrets로 관리하고 임시 키 파일은 배포 작업 종료 시 제거한다. 배포 파일과 키 자료는 Git에 커밋하지 않는다.
+- 자동 검증의 범위는 단위 테스트, Lint 및 빌드다. Compose 기기 테스트와 실제 카메라 OCR 검증은 별도로 수행한다.
+- 버전 관리, 산출물 보관 및 재실행 정책은 [배포 및 CI/CD 안내](noshnote-배포-CICD.md)를 따른다.
