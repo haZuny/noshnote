@@ -130,4 +130,10 @@
     <string name="date_month">%1$d월</string>
     <string name="unit_serving">인분</string>
     <string name="unit_piece">개</string>
+    <string name="confirm">확인</string>
+    <string name="period_label">오전/오후</string>
+    <string name="period_am">오전</string>
+    <string name="period_pm">오후</string>
+    <string name="hour_label">시</string>
+    <string name="minute_label">분</string>
 </resources>

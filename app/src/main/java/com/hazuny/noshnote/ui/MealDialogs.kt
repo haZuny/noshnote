@@ -2,14 +2,26 @@ package com.hazuny.noshnote.ui
 
 import com.hazuny.noshnote.R
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -23,11 +35,17 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +53,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.data.MealEntryEntity
 import com.hazuny.noshnote.data.MealRules
@@ -43,6 +65,11 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.abs
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 data class RecordDraft(
     val foodName: String,
@@ -54,6 +81,213 @@ data class RecordDraft(
     val mealTag: String,
     val tagWasManuallySet: Boolean,
 )
+
+@Composable
+private fun TimePickerField(
+    time: String,
+    onTimeChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showPicker by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        AutoFitText(uiText(R.string.eaten_time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { showPicker = true },
+            modifier = Modifier.fillMaxWidth().testTag("time_picker_button"),
+        ) {
+            AutoFitText(time, maxLines = 1)
+        }
+    }
+
+    if (showPicker) {
+        val parsedTime = runCatching { LocalTime.parse(time) }.getOrElse { LocalTime.now() }
+        val roundedMinute = ((parsedTime.minute + 2) / 5) * 5
+        val initialTime = if (roundedMinute == 60) {
+            parsedTime.plusHours(1).withMinute(0)
+        } else {
+            parsedTime.withMinute(roundedMinute)
+        }
+        var periodIndex by remember { mutableIntStateOf(if (initialTime.hour < 12) 0 else 1) }
+        var hourIndex by remember { mutableIntStateOf((initialTime.hour + 11) % 12) }
+        var minuteIndex by remember { mutableIntStateOf(initialTime.minute / 5) }
+        Dialog(
+            onDismissRequest = { showPicker = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 8.dp, bottom = 12.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(bottom = 12.dp)
+                                .width(32.dp)
+                                .height(4.dp)
+                                .background(MaterialTheme.colorScheme.outline, RoundedCornerShape(50)),
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            TimeWheel(
+                                label = uiText(R.string.period_label),
+                                values = listOf(uiText(R.string.period_am), uiText(R.string.period_pm)),
+                                selectedIndex = periodIndex,
+                                onSelectedIndexChange = { periodIndex = it },
+                                testTag = "time_wheel_period",
+                                modifier = Modifier.weight(1.15f),
+                            )
+                            TimeWheel(
+                                label = uiText(R.string.hour_label),
+                                values = (1..12).map(Int::toString),
+                                selectedIndex = hourIndex,
+                                onSelectedIndexChange = { hourIndex = it },
+                                testTag = "time_wheel_hour",
+                                modifier = Modifier.weight(0.85f),
+                            )
+                            TimeWheel(
+                                label = uiText(R.string.minute_label),
+                                values = (0..55 step 5).map { it.toString().padStart(2, '0') },
+                                selectedIndex = minuteIndex,
+                                onSelectedIndexChange = { minuteIndex = it },
+                                testTag = "time_wheel_minute",
+                                modifier = Modifier.weight(0.85f),
+                            )
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            TextButton(
+                                onClick = { showPicker = false },
+                                modifier = Modifier.testTag("time_picker_cancel"),
+                            ) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
+                            TextButton(
+                                onClick = {
+                                    val hour12 = hourIndex + 1
+                                    val hour24 = when {
+                                        periodIndex == 0 && hour12 == 12 -> 0
+                                        periodIndex == 0 -> hour12
+                                        hour12 == 12 -> 12
+                                        else -> hour12 + 12
+                                    }
+                                    onTimeChange(
+                                        LocalTime.of(hour24, minuteIndex * 5)
+                                            .format(DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)),
+                                    )
+                                    showPicker = false
+                                },
+                                modifier = Modifier.testTag("time_picker_confirm"),
+                            ) { AutoFitText(uiText(R.string.confirm), maxLines = 1) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimeWheel(
+    label: String,
+    values: List<String>,
+    selectedIndex: Int,
+    onSelectedIndexChange: (Int) -> Unit,
+    testTag: String,
+    modifier: Modifier = Modifier,
+) {
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedIndex)
+    val scope = rememberCoroutineScope()
+    val centeredIndex by remember(listState) {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+            layoutInfo.visibleItemsInfo
+                .minByOrNull { item -> abs(item.offset + item.size / 2 - viewportCenter) }
+                ?.index ?: selectedIndex
+        }
+    }
+    LaunchedEffect(listState) {
+        snapshotFlow { centeredIndex }
+            .distinctUntilChanged()
+            .collect { index -> onSelectedIndexChange(index.coerceIn(values.indices)) }
+    }
+
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        AutoFitText(
+            label,
+            maxLines = 1,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(144.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(12.dp),
+                    ),
+            )
+            LazyColumn(
+                state = listState,
+                flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center),
+                contentPadding = PaddingValues(vertical = 48.dp),
+                modifier = Modifier.fillMaxWidth().height(144.dp).testTag(testTag),
+            ) {
+                itemsIndexed(values) { index, value ->
+                    val distance = abs(index - centeredIndex)
+                    Text(
+                        text = value,
+                        color = if (distance == 0) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = if (distance == 1) 0.65f else 0.3f)
+                        },
+                        fontWeight = if (distance == 0) FontWeight.SemiBold else FontWeight.Normal,
+                        fontSize = if (distance == 0) 26.sp else 20.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .wrapContentHeight(Alignment.CenterVertically)
+                            .clickable {
+                                onSelectedIndexChange(index)
+                                scope.launch {
+                                    listState.animateScrollToItem(index)
+                                }
+                            }
+                            .testTag("${testTag}_option_$index"),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun RecordEditorDialog(
@@ -131,14 +365,12 @@ fun RecordEditorDialog(
                     AutoFitText(uiText(R.string.nutrition_basis, basis), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = time,
-                        onValueChange = {
+                    TimePickerField(
+                        time = time,
+                        onTimeChange = {
                             time = it
                             mealTag = MealRules.tagAfterTimeChange(mealTag, tagManual, it)
                         },
-                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
-                        singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
@@ -259,14 +491,12 @@ fun TemplateRecordDialog(
                 )
                 AutoFitText(uiText(R.string.current_intake, formatAmount(amount * template.caloriesPerUnitKcal), formatAmount(amount * template.proteinPerUnitG)), fontWeight = FontWeight.SemiBold)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = time,
-                        onValueChange = {
+                    TimePickerField(
+                        time = time,
+                        onTimeChange = {
                             time = it
                             tag = MealRules.tagAfterTimeChange(tag, tagManual, it)
                         },
-                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
-                        singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
