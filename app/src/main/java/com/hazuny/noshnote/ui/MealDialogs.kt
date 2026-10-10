@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -143,13 +144,14 @@ fun RecordEditorDialog(
                     Column(modifier = Modifier.weight(1f)) {
                         AutoFitText(uiText(R.string.meal_tag), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(4.dp))
-                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth().testTag("meal_tag_selector")) {
                             AutoFitText(mealTagText(mealTag), maxLines = 1)
                         }
                         DropdownMenu(expanded = tagMenuExpanded, onDismissRequest = { tagMenuExpanded = false }) {
                             tags.forEach { tag ->
                                 DropdownMenuItem(
-                                    text = { AutoFitText(mealTagText(tag), maxLines = 1) },
+                                    text = { Text(mealTagText(tag), maxLines = 1) },
+                                    modifier = Modifier.testTag("meal_tag_option_$tag"),
                                     onClick = {
                                         mealTag = if (tag == "태그 없음") "" else tag
                                         tagManual = true
@@ -170,7 +172,7 @@ fun RecordEditorDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
+            Button(modifier = Modifier.testTag("record_save_button"), onClick = {
                 val parsedQuantity = quantity.toDoubleOrNull()
                 val parsedCalories = calories.toDoubleOrNull()
                 val parsedProtein = protein.toDoubleOrNull()
@@ -270,9 +272,9 @@ fun TemplateRecordDialog(
                     Column(modifier = Modifier.weight(1f)) {
                         AutoFitText(uiText(R.string.meal_tag), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(4.dp))
-                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) { AutoFitText(mealTagText(tag), maxLines = 1) }
+                        OutlinedButton(onClick = { tagMenuExpanded = true }, modifier = Modifier.fillMaxWidth().testTag("meal_tag_selector")) { AutoFitText(mealTagText(tag), maxLines = 1) }
                         DropdownMenu(expanded = tagMenuExpanded, onDismissRequest = { tagMenuExpanded = false }) {
-                            tags.forEach { option -> DropdownMenuItem(text = { AutoFitText(mealTagText(option), maxLines = 1) }, onClick = {
+                            tags.forEach { option -> DropdownMenuItem(text = { Text(mealTagText(option), maxLines = 1) }, modifier = Modifier.testTag("meal_tag_option_$option"), onClick = {
                                 tag = if (option == "태그 없음") "" else option
                                 tagManual = true
                                 tagMenuExpanded = false
@@ -284,7 +286,7 @@ fun TemplateRecordDialog(
             }
         },
         confirmButton = {
-            Button(onClick = {
+            Button(modifier = Modifier.testTag("record_save_button"), onClick = {
                 val parsed = quantity.toDoubleOrNull()
                 val validTime = runCatching { LocalTime.parse(time) }.isSuccess
                 errorMessage = when {
