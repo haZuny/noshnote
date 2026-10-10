@@ -3,8 +3,7 @@
     <string name="nav_home">홈</string>
     <string name="nav_calendar">달력</string>
     <string name="nav_settings">설정</string>
-    <string name="title_today">오늘 기록</string>
-    <string name="title_date_record">%1$s 기록</string>
+    <string name="title_home">식단 기록</string>
     <string name="today">오늘</string>
     <string name="record">기록</string>
     <string name="item_count">%1$d개</string>

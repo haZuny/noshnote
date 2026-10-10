@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">NoshNote</string>
     <string name="nav_home">主页</string><string name="nav_calendar">日历</string><string name="nav_settings">设置</string>
-    <string name="title_today">今日记录</string><string name="title_date_record">%1$s记录</string><string name="today">今天</string>
+    <string name="title_home">饮食记录</string><string name="today">今天</string>
     <string name="record">记录</string><string name="item_count">%1$d项</string><string name="quick_record">＋ 快速记录</string><string name="load_food">≡ 已保存</string>
     <string name="no_records_yet">还没有记录</string><string name="quick_record_no_template">无需先保存食物，也可以直接记录。</string><string name="today_intake">今日摄入</string>
     <string name="calories">热量</string><string name="protein">蛋白质</string><string name="goal_not_set">未设置目标</string><string name="goal_reached">已达到目标</string><string name="amount_remaining">还差 %1$s %2$s</string>

@@ -40,8 +40,6 @@ import androidx.navigation.compose.rememberNavController
 import com.hazuny.noshnote.MealViewModel
 import com.hazuny.noshnote.R
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 private data class MainDestination(
     val route: String,
@@ -69,10 +67,7 @@ fun NoshNoteApp(viewModel: MealViewModel) {
     val title = when (currentRoute) {
         "calendar" -> uiText(R.string.nav_calendar)
         "settings" -> uiText(R.string.nav_settings)
-        else -> LocalDate.parse(selectedDateKey).let { date ->
-            if (date == LocalDate.now()) uiText(R.string.title_today)
-            else uiText(R.string.title_date_record, date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault())))
-        }
+        else -> uiText(R.string.title_home)
     }
     fun navigateToDestination(route: String) {
         navController.navigate(route) {
