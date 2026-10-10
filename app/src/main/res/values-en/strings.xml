@@ -130,4 +130,5 @@
     <string name="date_month">%1$s</string>
     <string name="unit_serving">serving</string>
     <string name="unit_piece">piece</string>
+    <string name="confirm">OK</string>
 </resources>

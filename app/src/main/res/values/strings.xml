@@ -130,4 +130,5 @@
     <string name="date_month">%1$d월</string>
     <string name="unit_serving">인분</string>
     <string name="unit_piece">개</string>
+    <string name="confirm">확인</string>
 </resources>

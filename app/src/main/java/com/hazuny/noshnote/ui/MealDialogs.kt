@@ -23,6 +23,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +47,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class RecordDraft(
     val foodName: String,
@@ -54,6 +59,59 @@ data class RecordDraft(
     val mealTag: String,
     val tagWasManuallySet: Boolean,
 )
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerField(
+    time: String,
+    onTimeChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showPicker by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        AutoFitText(uiText(R.string.eaten_time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { showPicker = true },
+            modifier = Modifier.fillMaxWidth().testTag("time_picker_button"),
+        ) {
+            AutoFitText(time, maxLines = 1)
+        }
+    }
+
+    if (showPicker) {
+        val initialTime = runCatching { LocalTime.parse(time) }.getOrElse { LocalTime.now() }
+        val state = rememberTimePickerState(
+            initialHour = initialTime.hour,
+            initialMinute = initialTime.minute,
+            is24Hour = true,
+        )
+        TimePickerDialog(
+            onDismissRequest = { showPicker = false },
+            title = { Text(uiText(R.string.eaten_time)) },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPicker = false },
+                    modifier = Modifier.testTag("time_picker_cancel"),
+                ) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onTimeChange(
+                            LocalTime.of(state.hour, state.minute)
+                                .format(DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)),
+                        )
+                        showPicker = false
+                    },
+                    modifier = Modifier.testTag("time_picker_confirm"),
+                ) { AutoFitText(uiText(R.string.confirm), maxLines = 1) }
+            },
+        ) {
+            TimeInput(state = state)
+        }
+    }
+}
 
 @Composable
 fun RecordEditorDialog(
@@ -131,14 +189,12 @@ fun RecordEditorDialog(
                     AutoFitText(uiText(R.string.nutrition_basis, basis), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = time,
-                        onValueChange = {
+                    TimePickerField(
+                        time = time,
+                        onTimeChange = {
                             time = it
                             mealTag = MealRules.tagAfterTimeChange(mealTag, tagManual, it)
                         },
-                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
-                        singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
@@ -259,14 +315,12 @@ fun TemplateRecordDialog(
                 )
                 AutoFitText(uiText(R.string.current_intake, formatAmount(amount * template.caloriesPerUnitKcal), formatAmount(amount * template.proteinPerUnitG)), fontWeight = FontWeight.SemiBold)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = time,
-                        onValueChange = {
+                    TimePickerField(
+                        time = time,
+                        onTimeChange = {
                             time = it
                             tag = MealRules.tagAfterTimeChange(tag, tagManual, it)
                         },
-                        label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
-                        singleLine = true,
                         modifier = Modifier.weight(1f),
                     )
                     Column(modifier = Modifier.weight(1f)) {
