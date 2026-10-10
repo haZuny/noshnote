@@ -11,6 +11,7 @@ import android.util.Size
 import android.view.MotionEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Camera
 import androidx.camera.core.FocusMeteringAction
@@ -69,6 +70,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 fun NutritionLabelScannerDialog(
     reviewNote: String,
@@ -82,11 +84,12 @@ fun NutritionLabelScannerDialog(
     }
     var permissionDenied by remember { mutableStateOf(false) }
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
-    var cameraError by remember { mutableStateOf<String?>(null) }
+    // 비동기 결과는 리소스 ID로 보관해 언어 변경 후 화면에서 다시 해석한다.
+    var cameraError by remember { mutableStateOf<Int?>(null) }
     var stableValues by remember { mutableStateOf<NutritionLabelValues?>(null) }
     var candidateDetected by remember { mutableStateOf(false) }
     var panelDetected by remember { mutableStateOf(false) }
-    var scanStatus by remember { mutableStateOf(context.getString(R.string.scan_prompt)) }
+    var scanStatus by remember { mutableIntStateOf(R.string.scan_prompt) }
     var scanGeneration by remember { mutableIntStateOf(0) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionGranted = granted
@@ -127,10 +130,10 @@ fun NutritionLabelScannerDialog(
                         ) {
                             AutoFitText(
                                 when {
-                                    stableValues != null -> context.getString(R.string.scan_complete)
-                                    candidateDetected -> context.getString(R.string.scan_candidates)
-                                    panelDetected -> context.getString(R.string.scan_panel)
-                                    else -> context.getString(R.string.scan_processing)
+                                    stableValues != null -> uiText(R.string.scan_complete)
+                                    candidateDetected -> uiText(R.string.scan_candidates)
+                                    panelDetected -> uiText(R.string.scan_panel)
+                                    else -> uiText(R.string.scan_processing)
                                 },
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 color = Color.White,
@@ -155,7 +158,7 @@ fun NutritionLabelScannerDialog(
                             color = MaterialTheme.colorScheme.surface,
                             shape = RoundedCornerShape(16.dp),
                         ) {
-                            AutoFitText(cameraError!!, modifier = Modifier.padding(18.dp), color = MaterialTheme.colorScheme.error)
+                            AutoFitText(uiText(cameraError!!), modifier = Modifier.padding(18.dp), color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -170,7 +173,7 @@ fun NutritionLabelScannerDialog(
                     ) {
                         val values = stableValues
                         if (values == null) {
-                            AutoFitText(scanStatus, style = MaterialTheme.typography.titleSmall)
+                            AutoFitText(uiText(scanStatus), style = MaterialTheme.typography.titleSmall)
                             Text(uiText(R.string.scan_glare_help), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                             if (cameraError != null) AutoFitText(uiText(R.string.camera_unavailable), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                         } else {
@@ -197,7 +200,7 @@ fun NutritionLabelScannerDialog(
                                     candidateDetected = false
                                     panelDetected = false
                                     cameraError = null
-                                    scanStatus = context.getString(R.string.scan_retry_prompt)
+                                    scanStatus = R.string.scan_retry_prompt
                                     scanGeneration++
                                 },
                                 enabled = stableValues != null,
@@ -285,21 +288,21 @@ fun NutritionLabelScannerDialog(
                     null
                 }
                 val nextStatus = when {
-                    quality.glareRatio >= 0.12 -> context.getString(R.string.scan_glare)
-                    quality.sharpness < 18.0 -> context.getString(R.string.scan_blurry)
-                    recognizedText.isBlank() -> context.getString(R.string.scan_no_text)
-                    stableCalories != null && stableProtein == null -> context.getString(R.string.scan_calories_found)
-                    stableProtein != null && stableCalories == null -> context.getString(R.string.scan_protein_found)
-                    candidateDetectedInRecentFrames -> context.getString(R.string.scan_review_candidates)
-                    hasPanel -> context.getString(R.string.scan_zoom_panel)
-                    else -> context.getString(R.string.scan_no_values)
+                    quality.glareRatio >= 0.12 -> R.string.scan_glare
+                    quality.sharpness < 18.0 -> R.string.scan_blurry
+                    recognizedText.isBlank() -> R.string.scan_no_text
+                    stableCalories != null && stableProtein == null -> R.string.scan_calories_found
+                    stableProtein != null && stableCalories == null -> R.string.scan_protein_found
+                    candidateDetectedInRecentFrames -> R.string.scan_review_candidates
+                    hasPanel -> R.string.scan_zoom_panel
+                    else -> R.string.scan_no_values
                 }
                 if (confirmedValues != null && locked.compareAndSet(false, true)) {
                     mainExecutor.execute {
                         panelDetected = hasPanel
                         candidateDetected = true
                         stableValues = confirmedValues
-                        scanStatus = context.getString(R.string.scan_review_before_apply)
+                        scanStatus = R.string.scan_review_before_apply
                     }
                 } else {
                     mainExecutor.execute {
@@ -417,7 +420,7 @@ fun NutritionLabelScannerDialog(
                                         candidateDetected = recentCandidates.any {
                                             it.caloriesKcal != null || it.proteinG != null
                                         }
-                                        scanStatus = context.getString(R.string.scan_text_retry)
+                                        scanStatus = R.string.scan_text_retry
                                     }
                                 }
                                 imageProxy.close()
@@ -441,7 +444,7 @@ fun NutritionLabelScannerDialog(
                         }
                     }
                 } catch (_: Exception) {
-                    mainExecutor.execute { cameraError = context.getString(R.string.camera_start_failed) }
+                    mainExecutor.execute { cameraError = R.string.camera_start_failed }
                 }
             }, mainExecutor)
 

@@ -58,12 +58,12 @@ fun SettingsScreen(
     val context = LocalContext.current
     var calories by remember { mutableStateOf("") }
     var protein by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf<Int?>(null) }
     var editingTemplate by remember { mutableStateOf<FoodTemplateEntity?>(null) }
     var creatingTemplate by remember { mutableStateOf(false) }
     var deletingTemplate by remember { mutableStateOf<FoodTemplateEntity?>(null) }
     var pendingImport by remember { mutableStateOf<MealBackupData?>(null) }
-    var backupMessage by remember { mutableStateOf<String?>(null) }
+    var backupMessage by remember { mutableStateOf<Int?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) coroutineScope.launch {
@@ -74,9 +74,9 @@ fun SettingsScreen(
                         ?: throw IOException("백업 파일을 열 수 없습니다.")
                     output.use { it.write(json.toByteArray(Charsets.UTF_8)) }
                 }
-                backupMessage = context.getString(R.string.backup_export_success)
+                backupMessage = R.string.backup_export_success
             } catch (_: Exception) {
-                backupMessage = context.getString(R.string.backup_operation_failed)
+                backupMessage = R.string.backup_operation_failed
             }
         }
     }
@@ -91,7 +91,7 @@ fun SettingsScreen(
                 pendingImport = viewModel.parseBackupJson(json)
                 backupMessage = null
             } catch (_: Exception) {
-                backupMessage = context.getString(R.string.backup_import_failed)
+                backupMessage = R.string.backup_import_failed
             }
         }
     }
@@ -138,16 +138,16 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
                         )
                     }
-                    if (message != null) AutoFitText(message!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    if (message != null) AutoFitText(uiText(message!!), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     Button(
                         onClick = {
                             val parsedCalories = calories.toDoubleOrNull()
                             val parsedProtein = protein.toDoubleOrNull()
                             if (parsedCalories == null || parsedProtein == null || parsedCalories <= 0 || parsedProtein <= 0) {
-                                message = context.getString(R.string.goal_invalid)
+                                message = R.string.goal_invalid
                             } else {
                                 viewModel.saveGoal(parsedCalories, parsedProtein)
-                                message = context.getString(R.string.goal_saved)
+                                message = R.string.goal_saved
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -174,10 +174,10 @@ fun SettingsScreen(
                         }
                     }
                     backupMessage?.let { message ->
-                        val success = message == context.getString(R.string.backup_export_success) ||
-                            message == context.getString(R.string.backup_import_success)
+                        val success = message == R.string.backup_export_success ||
+                            message == R.string.backup_import_success
                         Text(
-                            message,
+                            uiText(message),
                             color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                         )
@@ -275,9 +275,9 @@ fun SettingsScreen(
                     coroutineScope.launch {
                         try {
                             viewModel.replaceAllDataFromBackup(data)
-                            backupMessage = context.getString(R.string.backup_import_success)
+                            backupMessage = R.string.backup_import_success
                         } catch (_: Exception) {
-                            backupMessage = context.getString(R.string.backup_import_failed)
+                            backupMessage = R.string.backup_import_failed
                         }
                         pendingImport = null
                     }

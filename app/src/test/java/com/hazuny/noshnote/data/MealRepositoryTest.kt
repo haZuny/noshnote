@@ -97,14 +97,21 @@ class MealRepositoryTest {
         var updatedEntry: MealEntryEntity? = null
         val goals = mutableListOf<DailyGoalEntity>()
 
+        override suspend fun getAllEntriesForBackup(): List<MealEntryEntity> = emptyList()
         override fun observeAllEntries(): Flow<List<MealEntryEntity>> = emptyFlow()
         override fun observeEntriesForDate(dateKey: String): Flow<List<MealEntryEntity>> = emptyFlow()
         override suspend fun insertEntry(entry: MealEntryEntity) { insertedEntry = entry }
+        override suspend fun insertEntries(entries: List<MealEntryEntity>) = Unit
         override suspend fun updateEntry(entry: MealEntryEntity) { updatedEntry = entry }
         override suspend fun deleteEntry(entryId: Long) = Unit
+        override suspend fun deleteAllEntries() = Unit
+        override suspend fun getAllFoodTemplatesForBackup(): List<FoodTemplateEntity> = emptyList()
         override fun observeFoodTemplates(): Flow<List<FoodTemplateEntity>> = emptyFlow()
         override suspend fun saveFoodTemplate(food: FoodTemplateEntity) = Unit
+        override suspend fun saveFoodTemplates(foods: List<FoodTemplateEntity>) = Unit
         override suspend fun deleteFoodTemplate(foodId: Long) = Unit
+        override suspend fun deleteAllFoodTemplates() = Unit
+        override suspend fun getGoalForBackup(): DailyGoalEntity? = goals.firstOrNull()
         override fun observeGoal(): Flow<DailyGoalEntity?> = emptyFlow()
         override suspend fun deleteAllGoals() { goals.clear() }
         override suspend fun saveGoal(goal: DailyGoalEntity) { goals += goal }

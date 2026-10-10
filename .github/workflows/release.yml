@@ -1,0 +1,105 @@
+name: Android Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-tag:
+    name: 배포 태그 확인
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: 태그와 main 이력 가져오기
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 태그 형식과 main 포함 여부 확인
+        run: python3 .github/scripts/android_release.py check-tag
+
+  verify:
+    name: 배포 코드 검증
+    needs: validate-tag
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: 서명된 배포 파일 생성
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: 소스 가져오기
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: 빌드 환경 준비
+        uses: ./.github/actions/android-build
+
+      - name: 키 복원 · 서명 빌드 · 버전 및 서명 검증
+        env:
+          KEY: ${{ secrets.KEY }}
+          KEY_PW: ${{ secrets.KEY_PW }}
+          KEY_ALIAS_NAME: ${{ secrets.KEY_ALIAS_NAME }}
+          KEY_ALIAS_PW: ${{ secrets.KEY_ALIAS_PW }}
+        run: python3 .github/scripts/android_release.py build
+
+      - name: 배포 파일과 최적화 매핑 보관
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: app/build/release-assets/
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    name: GitHub Release 초안 생성
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: 검증된 배포 파일 받기
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release
+
+      - name: 배포 파일 체크섬 확인
+        working-directory: release
+        run: sha256sum --check SHA256SUMS
+
+      - name: 릴리스 초안 생성 및 파일 첨부
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          # 재실행은 초안만 갱신하며 이미 공개한 릴리스는 보존한다.
+          if draft=$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft' 2> "$RUNNER_TEMP/release-error"); then
+            if [[ "$draft" != "true" ]]; then
+              echo '이미 공개된 릴리스는 덮어쓸 수 없습니다.' >&2
+              exit 1
+            fi
+          else
+            if ! grep -q '^release not found$' "$RUNNER_TEMP/release-error"; then
+              cat "$RUNNER_TEMP/release-error" >&2
+              exit 1
+            fi
+            options=()
+            if [[ "$RELEASE_TAG" == *-* ]]; then
+              options+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" --draft --verify-tag --generate-notes \
+              --title "NoshNote $RELEASE_TAG" "${options[@]}"
+          fi
+          gh release upload "$RELEASE_TAG" release/* --clobber

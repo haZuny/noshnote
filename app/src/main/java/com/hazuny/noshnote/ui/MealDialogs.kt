@@ -57,7 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
@@ -340,7 +340,7 @@ fun RecordEditorDialog(
     onSave: (RecordDraft, Boolean) -> Unit,
     onDelete: (MealEntryEntity) -> Unit,
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val initialTime = entry?.let {
         Instant.ofEpochMilli(it.eatenAtEpochMillis)
             .atZone(ZoneId.systemDefault())
@@ -453,12 +453,12 @@ fun RecordEditorDialog(
                 val parsedProtein = protein.toDoubleOrNull()
                 val parsedTime = runCatching { LocalTime.parse(time) }.getOrNull()
                 errorMessage = when {
-                    foodName.isBlank() -> context.getString(R.string.food_name_required)
-                    unit.isBlank() -> context.getString(R.string.unit_required)
-                    parsedQuantity == null || parsedQuantity <= 0 -> context.getString(R.string.quantity_invalid)
-                    parsedCalories == null || parsedCalories < 0 -> context.getString(R.string.calories_invalid)
-                    parsedProtein == null || parsedProtein < 0 -> context.getString(R.string.protein_invalid)
-                    parsedTime == null -> context.getString(R.string.time_invalid)
+                    foodName.isBlank() -> resources.getString(R.string.food_name_required)
+                    unit.isBlank() -> resources.getString(R.string.unit_required)
+                    parsedQuantity == null || parsedQuantity <= 0 -> resources.getString(R.string.quantity_invalid)
+                    parsedCalories == null || parsedCalories < 0 -> resources.getString(R.string.calories_invalid)
+                    parsedProtein == null || parsedProtein < 0 -> resources.getString(R.string.protein_invalid)
+                    parsedTime == null -> resources.getString(R.string.time_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
@@ -493,7 +493,7 @@ fun RecordEditorDialog(
             onApply = { values ->
                 calories = formatInputAmount(values.caloriesKcal)
                 protein = formatInputAmount(values.proteinG)
-                nutritionBasis = values.basisDescription ?: context.getString(R.string.basis_unknown)
+                nutritionBasis = values.basisDescription ?: resources.getString(R.string.basis_unknown)
                 showNutritionScanner = false
             },
         )
@@ -507,7 +507,7 @@ fun TemplateRecordDialog(
     onDismiss: () -> Unit,
     onSave: (RecordDraft) -> Unit,
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     var quantity by remember(template.id) { mutableStateOf("1") }
     val timeNow = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     var time by remember(template.id) { mutableStateOf(timeNow) }
@@ -597,8 +597,8 @@ fun TemplateRecordDialog(
                 val parsed = quantity.toDoubleOrNull()
                 val validTime = runCatching { LocalTime.parse(time) }.isSuccess
                 errorMessage = when {
-                    parsed == null || parsed <= 0 -> context.getString(R.string.quantity_invalid)
-                    !validTime -> context.getString(R.string.time_invalid)
+                    parsed == null || parsed <= 0 -> resources.getString(R.string.quantity_invalid)
+                    !validTime -> resources.getString(R.string.time_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
@@ -651,7 +651,7 @@ fun FoodTemplateEditorDialog(
     onSave: (FoodTemplateEntity) -> Unit,
     onDelete: ((FoodTemplateEntity) -> Unit)? = null,
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     var name by remember(template?.id) { mutableStateOf(template?.name.orEmpty()) }
     val defaultPieceUnit = uiText(R.string.unit_piece)
     var unit by remember(template?.id) { mutableStateOf(template?.unit ?: defaultPieceUnit) }
@@ -687,10 +687,10 @@ fun FoodTemplateEditorDialog(
                 val parsedCalories = calories.toDoubleOrNull()
                 val parsedProtein = protein.toDoubleOrNull()
                 errorMessage = when {
-                    name.isBlank() -> context.getString(R.string.food_name_required)
-                    unit.isBlank() -> context.getString(R.string.record_unit_required)
-                    parsedCalories == null || parsedCalories < 0 -> context.getString(R.string.calories_invalid)
-                    parsedProtein == null || parsedProtein < 0 -> context.getString(R.string.protein_invalid)
+                    name.isBlank() -> resources.getString(R.string.food_name_required)
+                    unit.isBlank() -> resources.getString(R.string.record_unit_required)
+                    parsedCalories == null || parsedCalories < 0 -> resources.getString(R.string.calories_invalid)
+                    parsedProtein == null || parsedProtein < 0 -> resources.getString(R.string.protein_invalid)
                     else -> null
                 }
                 if (errorMessage == null) {
@@ -720,7 +720,7 @@ fun FoodTemplateEditorDialog(
             onApply = { values ->
                 calories = formatInputAmount(values.caloriesKcal)
                 protein = formatInputAmount(values.proteinG)
-                nutritionBasis = values.basisDescription ?: context.getString(R.string.basis_unknown)
+                nutritionBasis = values.basisDescription ?: resources.getString(R.string.basis_unknown)
                 showNutritionScanner = false
             },
         )

@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -55,7 +57,6 @@ import com.hazuny.noshnote.data.MealRules
 import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +70,7 @@ fun CalendarScreen(
     var showMonthPicker by rememberSaveable { mutableStateOf(false) }
     var pickerYear by rememberSaveable { mutableStateOf(LocalDate.now().year) }
     var pickerMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
+    val locale = LocalConfiguration.current.locales[0]
     val month = LocalDate.parse(monthKey)
     val today = LocalDate.now()
     val datesWithRecords = remember(entries) { entries.map { LocalDate.parse(it.dateKey) }.toSet() }
@@ -147,7 +149,7 @@ fun CalendarScreen(
                 ) {
                     Text("‹", fontSize = 28.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
-                BoxWithConstraints(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     TextButton(
                         onClick = {
                             pickerYear = month.year
@@ -157,7 +159,7 @@ fun CalendarScreen(
                         modifier = Modifier.semantics { contentDescription = selectMonthDescription },
                     ) {
                         AutoFitText(
-                            month.format(DateTimeFormatter.ofPattern(uiText(R.string.month_pattern), Locale.getDefault())),
+                            month.format(DateTimeFormatter.ofPattern(uiText(R.string.month_pattern), locale)),
                             maxLines = 1,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -192,7 +194,7 @@ fun CalendarScreen(
                         horizontalArrangement = Arrangement.spacedBy(gridGap),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        java.text.DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays.filter { it.isNotBlank() }.forEach { label ->
+                        java.text.DateFormatSymbols.getInstance(locale).shortWeekdays.filter { it.isNotBlank() }.forEach { label ->
                             AutoFitText(
                                 label,
                                 modifier = Modifier.weight(1f).padding(vertical = 4.dp),
@@ -265,7 +267,7 @@ fun CalendarScreen(
                         value = pickerMonth,
                         range = 1..12,
                         wrap = true,
-                        label = { uiText(R.string.date_month, java.time.Month.of(it).getDisplayName(java.time.format.TextStyle.FULL, Locale.getDefault())) },
+                        label = { uiText(R.string.date_month, java.time.Month.of(it).getDisplayName(java.time.format.TextStyle.FULL, locale)) },
                         onValueChange = { pickerMonth = it },
                         modifier = Modifier.weight(1f),
                     )
@@ -336,7 +338,7 @@ private fun WheelPickerColumn(
         (-2..2).forEach { offset ->
             val itemValue = nextWheelValue(value, offset, range, wrap)
             val selected = offset == 0
-            BoxWithConstraints(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -389,6 +391,7 @@ private fun CalendarDay(
     dayNumberFontSize: androidx.compose.ui.unit.TextUnit,
     onClick: () -> Unit,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
     val isToday = date == LocalDate.now()
     val progress = MealRules.calendarGoalProgress(entriesForDate, goalCalories, goalProtein)
     val hasRecord = progress.hasEntries
@@ -416,7 +419,7 @@ private fun CalendarDay(
         achievedGoalCount < goalCount -> uiText(R.string.calendar_status_partial, achievedGoalCount, goalCount)
         else -> uiText(R.string.calendar_status_success, achievedGoalCount, goalCount)
     }
-    val accessibleDate = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), Locale.getDefault()))
+    val accessibleDate = date.format(DateTimeFormatter.ofPattern(uiText(R.string.date_pattern), locale))
     val dateDescription = uiText(R.string.date_accessibility, accessibleDate, statusDescription)
     Column(
         modifier = modifier
