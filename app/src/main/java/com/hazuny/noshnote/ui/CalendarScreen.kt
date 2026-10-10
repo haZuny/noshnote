@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.navigationBarsPadding
 import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.data.MealRules
 import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -70,20 +71,12 @@ fun CalendarScreen(
     var pickerMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
     val month = LocalDate.parse(monthKey)
     val today = LocalDate.now()
-    val datesWithRecords = remember(entries) { entries.map { it.dateKey }.toSet() }
+    val datesWithRecords = remember(entries) { entries.map { LocalDate.parse(it.dateKey) }.toSet() }
     val entriesByDate = remember(entries) { entries.groupBy { it.dateKey } }
     val monthRecordDays = remember(entries, monthKey) {
         entries.asSequence().filter { it.dateKey.startsWith(monthKey.take(7)) }.map { it.dateKey }.toSet().size
     }
-    val streak = remember(datesWithRecords) {
-        var cursor = if (today.toString() in datesWithRecords) today else today.minusDays(1)
-        var days = 0
-        while (cursor.toString() in datesWithRecords) {
-            days += 1
-            cursor = cursor.minusDays(1)
-        }
-        days
-    }
+    val streak = remember(datesWithRecords, today) { MealRules.currentRecordStreak(datesWithRecords, today) }
     val leadingDays = month.dayOfWeek.value % 7
     val calendarCells: List<LocalDate?> = buildList {
         repeat(leadingDays) { add(null) }
@@ -397,15 +390,10 @@ private fun CalendarDay(
     onClick: () -> Unit,
 ) {
     val isToday = date == LocalDate.now()
-    val hasRecord = entriesForDate.isNotEmpty()
-    val calories = entriesForDate.sumOf { it.caloriesKcalSnapshot }
-    val protein = entriesForDate.sumOf { it.proteinGSnapshot }
-    val caloriesGoalValue = goalCalories?.takeIf { it > 0 }
-    val proteinGoalValue = goalProtein?.takeIf { it > 0 }
-    val goalCount = (if (caloriesGoalValue != null) 1 else 0) + (if (proteinGoalValue != null) 1 else 0)
-    val achievedGoalCount =
-        (if (caloriesGoalValue != null && calories <= caloriesGoalValue) 1 else 0) +
-            (if (proteinGoalValue != null && protein >= proteinGoalValue) 1 else 0)
+    val progress = MealRules.calendarGoalProgress(entriesForDate, goalCalories, goalProtein)
+    val hasRecord = progress.hasEntries
+    val goalCount = progress.goalCount
+    val achievedGoalCount = progress.achievedGoalCount
     val backgroundColor = when {
         !hasRecord -> Color(0xFFF0F3F5)
         goalCount == 0 -> Color(0xFFE4F4FA)

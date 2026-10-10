@@ -46,11 +46,11 @@ import androidx.compose.ui.unit.sp
 import com.hazuny.noshnote.MealViewModel
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.data.MealRules
 import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -341,11 +341,5 @@ fun formatAmount(value: Double): String =
 fun formatInputAmount(value: Double): String = BigDecimal.valueOf(value).stripTrailingZeros().toPlainString()
 
 fun inferMealTag(time: String): String {
-    val parsed = runCatching { LocalTime.parse(time) }.getOrNull() ?: return "간식"
-    return when (parsed.hour) {
-        in 5..10 -> "아침"
-        in 11..15 -> "점심"
-        in 16..21 -> "저녁"
-        else -> "간식"
-    }
+    return MealRules.inferMealTag(time)
 }

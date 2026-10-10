@@ -49,7 +49,7 @@ class MealRepository(private val mealDao: MealDao) {
     }
 
     suspend fun saveGoal(calories: Double, protein: Double, effectiveFromDate: String) {
-        mealDao.saveGoal(
+        mealDao.replaceCurrentGoal(
             DailyGoalEntity(
                 caloriesKcal = calories,
                 proteinG = protein,
