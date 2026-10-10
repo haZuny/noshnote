@@ -274,6 +274,7 @@
           if (key === today) {
             level = 'today'; status = '오늘 진행 중';
           } else if (items.length) {
+            // 지난 날짜도 설정 화면의 현재 목표로 간단히 다시 판정한다.
             const kcalOK = totals.kcal <= Number(state.goals.kcal);
             const proteinOK = totals.protein >= Number(state.goals.protein);
             const goalCount = Number(kcalOK) + Number(proteinOK);

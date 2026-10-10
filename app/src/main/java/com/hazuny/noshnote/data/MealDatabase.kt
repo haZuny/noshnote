@@ -11,6 +11,7 @@ import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.room3.Transaction
 import androidx.room3.Update
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import kotlinx.coroutines.Dispatchers
@@ -88,8 +89,17 @@ interface MealDao {
     @Query("SELECT * FROM daily_goals ORDER BY effectiveFromDate DESC, id DESC LIMIT 1")
     fun observeGoal(): Flow<DailyGoalEntity?>
 
-    @Insert
+    @Query("DELETE FROM daily_goals")
+    suspend fun deleteAllGoals()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveGoal(goal: DailyGoalEntity)
+
+    @Transaction
+    suspend fun replaceCurrentGoal(goal: DailyGoalEntity) {
+        deleteAllGoals()
+        saveGoal(goal.copy(id = 1L))
+    }
 }
 
 @Database(

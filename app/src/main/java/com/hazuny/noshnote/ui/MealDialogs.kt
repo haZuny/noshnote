@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.data.MealEntryEntity
+import com.hazuny.noshnote.data.MealRules
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -133,7 +134,7 @@ fun RecordEditorDialog(
                         value = time,
                         onValueChange = {
                             time = it
-                            if (!tagManual) mealTag = inferMealTag(it)
+                            mealTag = MealRules.tagAfterTimeChange(mealTag, tagManual, it)
                         },
                         label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
                         singleLine = true,
@@ -260,7 +261,7 @@ fun TemplateRecordDialog(
                         value = time,
                         onValueChange = {
                             time = it
-                            if (!tagManual) tag = inferMealTag(it)
+                            tag = MealRules.tagAfterTimeChange(tag, tagManual, it)
                         },
                         label = { AutoFitText(uiText(R.string.eaten_time), maxLines = 1) },
                         singleLine = true,
