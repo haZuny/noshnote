@@ -2,11 +2,8 @@ package com.hazuny.noshnote.ui
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.data.MealEntryEntity
@@ -15,6 +12,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.min
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Rule
@@ -41,7 +39,7 @@ class TimePickerFieldTest {
             }
         }
 
-        chooseTime("17", "35")
+        chooseRecordTime()
         composeRule.onNodeWithTag("record_save_button").performClick()
 
         composeRule.runOnIdle {
@@ -72,7 +70,8 @@ class TimePickerFieldTest {
             }
         }
 
-        chooseTime("12", "40", initialTime)
+        selectTime(initialTime, targetPeriod = 1, targetHour = 11, targetMinute = 8)
+        composeRule.onNodeWithTag("time_picker_confirm").performClick()
         composeRule.onNodeWithTag("record_save_button").performClick()
 
         composeRule.runOnIdle {
@@ -97,9 +96,7 @@ class TimePickerFieldTest {
         }
 
         composeRule.onNodeWithTag("time_picker_button").performClick()
-        composeRule.onNodeWithText("09").performTextReplacement("17")
-        composeRule.onNodeWithContentDescription("Select minutes", substring = true).performClick()
-        composeRule.onNodeWithText("20").performTextReplacement("35")
+        selectTime(initialTime = "09:20", targetPeriod = 1, targetHour = 4, targetMinute = 7, openPicker = false)
         composeRule.onNodeWithTag("time_picker_cancel").performClick()
         composeRule.onNodeWithTag("record_save_button").performClick()
 
@@ -109,14 +106,42 @@ class TimePickerFieldTest {
         }
     }
 
-    private fun chooseTime(hour: String, minute: String, initialTime: String = "09:20") {
+    private fun chooseRecordTime() {
         composeRule.onNodeWithTag("time_picker_button").performClick()
-        val initialHour = initialTime.substring(0, 2)
-        val initialMinute = initialTime.substring(3, 5)
-        composeRule.onNodeWithText(initialHour).performTextReplacement(hour)
-        composeRule.onNodeWithContentDescription("Select minutes", substring = true).performClick()
-        composeRule.onNodeWithText(initialMinute).performTextReplacement(minute)
+        selectTime(initialTime = "09:20", targetPeriod = 1, targetHour = 4, targetMinute = 7, openPicker = false)
         composeRule.onNodeWithTag("time_picker_confirm").performClick()
+    }
+
+    private fun selectTime(
+        initialTime: String,
+        targetPeriod: Int,
+        targetHour: Int,
+        targetMinute: Int,
+        openPicker: Boolean = true,
+    ) {
+        if (openPicker) composeRule.onNodeWithTag("time_picker_button").performClick()
+        val parsedTime = LocalTime.parse(initialTime)
+        val roundedMinute = ((parsedTime.minute + 2) / 5) * 5
+        val roundedTime = if (roundedMinute == 60) {
+            parsedTime.plusHours(1).withMinute(0)
+        } else {
+            parsedTime.withMinute(roundedMinute)
+        }
+        val initialPeriod = if (roundedTime.hour < 12) 0 else 1
+        if (initialPeriod != targetPeriod) {
+            composeRule.onNodeWithTag("time_wheel_period_option_$targetPeriod").performClick()
+        }
+        moveWheel("time_wheel_hour", (roundedTime.hour + 11) % 12, targetHour)
+        moveWheel("time_wheel_minute", roundedTime.minute / 5, targetMinute)
+    }
+
+    private fun moveWheel(tag: String, initialIndex: Int, targetIndex: Int) {
+        var currentIndex = initialIndex
+        while (currentIndex != targetIndex) {
+            val distance = min(1, kotlin.math.abs(targetIndex - currentIndex))
+            currentIndex += if (targetIndex > currentIndex) distance else -distance
+            composeRule.onNodeWithTag("${tag}_option_$currentIndex").performClick()
+        }
     }
 
     private fun mealEntry(mealTag: String, tagSource: String) = MealEntryEntity(

@@ -24,4 +24,9 @@
     <string name="scan_glare_help">请展开包装并倾斜拍摄以减少反光。若画面模糊，请点击屏幕对焦。</string><string name="camera_unavailable">无法使用相机。可以继续手动输入。</string><string name="scan_review_values">请确认识别结果</string><string name="protein_value">蛋白质 %1$s g</string><string name="basis_label">标示基准：%1$s</string><string name="scan_retry_prompt">正在重新查找标签</string><string name="scan_again">重新识别</string><string name="apply_values">应用数值</string><string name="camera_permission_needed">需要相机权限</string><string name="camera_permission_check">正在检查相机权限</string><string name="manual_input_available">无需相机权限，也可以手动输入食物信息。</string><string name="request_camera_permission">重新请求权限</string><string name="scan_text_retry">无法识别文字，请减少反光后重试。</string><string name="camera_start_failed">无法启动相机，请检查权限和相机连接。</string><string name="scan_close">关闭</string>
     <string name="date_pattern">M月d日 EEEE</string><string name="month_pattern">yyyy年M月</string><string name="date_year">%1$d年</string><string name="date_month">%1$s</string><string name="unit_serving">份</string><string name="unit_piece">个</string>
     <string name="confirm">确定</string>
+    <string name="period_label">上午/下午</string>
+    <string name="period_am">上午</string>
+    <string name="period_pm">下午</string>
+    <string name="hour_label">时</string>
+    <string name="minute_label">分</string>
 </resources>

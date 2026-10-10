@@ -14,4 +14,9 @@
     <string name="scan_glare_help">包装を平らにし、反射しない角度から映してください。ぼやける場合は画面をタップしてピントを合わせます。</string><string name="camera_unavailable">カメラを使用できません。手入力で続けられます。</string><string name="scan_review_values">読み取った値を確認してください</string><string name="protein_value">たんぱく質 %1$s g</string><string name="basis_label">表示基準：%1$s</string><string name="scan_retry_prompt">表示を再検索中</string><string name="scan_again">再読み取り</string><string name="apply_values">値を適用</string><string name="camera_permission_needed">カメラの権限が必要です</string><string name="camera_permission_check">カメラの権限を確認中</string><string name="manual_input_available">カメラを使わずに食品情報を手入力できます。</string><string name="request_camera_permission">権限を再リクエスト</string><string name="scan_text_retry">文字を読み取れません。反射を減らして再度お試しください。</string><string name="camera_start_failed">カメラを起動できません。権限と接続を確認してください。</string><string name="scan_close">閉じる</string>
     <string name="date_pattern">M月d日 EEEE</string><string name="month_pattern">yyyy年M月</string><string name="date_year">%1$d年</string><string name="date_month">%1$s</string><string name="unit_serving">人前</string><string name="unit_piece">個</string>
     <string name="confirm">決定</string>
+    <string name="period_label">午前/午後</string>
+    <string name="period_am">午前</string>
+    <string name="period_pm">午後</string>
+    <string name="hour_label">時</string>
+    <string name="minute_label">分</string>
 </resources>

@@ -131,4 +131,9 @@
     <string name="unit_serving">serving</string>
     <string name="unit_piece">piece</string>
     <string name="confirm">OK</string>
+    <string name="period_label">AM/PM</string>
+    <string name="period_am">AM</string>
+    <string name="period_pm">PM</string>
+    <string name="hour_label">Hour</string>
+    <string name="minute_label">Minute</string>
 </resources>
