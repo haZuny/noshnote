@@ -30,8 +30,17 @@
     .topline-brand-name { position: absolute; left: 54px; color: var(--ink); font-size: 13px; font-weight: 650; letter-spacing: -.02em; }
     .brand { font-size: 20px; font-weight: 750; letter-spacing: -.035em; }
     .eyebrow { color: var(--muted); font-size: 12px; }
-    .screen { display: none; }
-    .screen.active { display: block; }
+    .screen-stack { display: grid; }
+    .screen { display: none; grid-area: 1 / 1; min-width: 0; }
+    .screen.active, .screen.leaving { display: block; }
+    .screen.enter-next { animation: page-in-next .28s ease-out both; }
+    .screen.enter-previous { animation: page-in-previous .28s ease-out both; }
+    .screen.leave-next { animation: page-out-next .28s ease-out both; }
+    .screen.leave-previous { animation: page-out-previous .28s ease-out both; }
+    @keyframes page-in-next { from { transform: translateX(28px); opacity: .72; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes page-in-previous { from { transform: translateX(-28px); opacity: .72; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes page-out-next { to { transform: translateX(-28px); opacity: .72; } }
+    @keyframes page-out-previous { to { transform: translateX(28px); opacity: .72; } }
     h1 { font-size: 26px; letter-spacing: -.04em; line-height: 1.2; margin: 0 0 5px; }
     h2 { font-size: 17px; margin: 0; letter-spacing: -.02em; }
     p { margin: 0; }
@@ -121,10 +130,10 @@
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .food-manage { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
     .food-manage:first-of-type { border-top: 0; }
-    .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: none; align-items: end; justify-content: center; background: rgba(22,34,43,.35); }
-    .modal-backdrop.open { display: flex; }
-    .sheet { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 20px 18px calc(22px + env(safe-area-inset-bottom)); background: #fff; border-radius: 24px 24px 0 0; animation: rise .18s ease-out; }
-    @keyframes rise { from { transform: translateY(20px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+    .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: flex; align-items: end; justify-content: center; background: rgba(22,34,43,.35); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s; }
+    .modal-backdrop.open { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s; }
+    .sheet { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 20px 18px calc(22px + env(safe-area-inset-bottom)); background: #fff; border-radius: 24px 24px 0 0; transform: translateY(20px); opacity: .72; transition: transform .24s ease-out, opacity .18s ease-out; }
+    .modal-backdrop.open .sheet { transform: translateY(0); opacity: 1; }
     .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .sheet-head h2 { font-size: 19px; }
     .sheet-actions { display: flex; gap: 9px; margin-top: 16px; }
@@ -137,6 +146,7 @@
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
     .screen-note { margin-top: 12px; color: var(--muted); font-size: 12px; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(37,136,178,.3); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { .screen.enter-next, .screen.enter-previous, .screen.leave-next, .screen.leave-previous { animation-duration: 1ms !important; } .sheet { transition-duration: 1ms !important; } }
     @media (min-width: 600px) { .app { padding-top: 30px; } .modal-backdrop { align-items: center; padding: 20px; } .sheet { border-radius: 24px; } }
   </style>
 </head>
@@ -144,6 +154,7 @@
   <main class="app">
     <header class="topline"><img class="topline-brand-icon" src="../app/src/main/res/drawable-nodpi/noshnote_symbol.png" alt=""><span class="topline-brand-name">NoshNote</span><div class="brand" id="app-bar-title">오늘 기록</div></header>
 
+    <div class="screen-stack">
     <section id="home" class="screen active" aria-labelledby="app-bar-title">
       <div class="date-switch"><button class="icon-btn" id="prev-day" aria-label="이전 날짜">‹</button><strong id="home-date"></strong><button class="icon-btn" id="next-day" aria-label="다음 날짜">›</button><button class="secondary" id="go-today" style="margin-left:auto;min-height:36px;padding:0 11px;font-size:12px">오늘</button></div>
       <div class="card summary" id="summary"></div>
@@ -175,6 +186,7 @@
         <div id="food-list"></div>
       </div>
     </section>
+    </div>
   </main>
 
   <nav class="nav" aria-label="주요 메뉴">
@@ -293,7 +305,35 @@
         document.querySelectorAll('[data-edit-food]').forEach(button => button.addEventListener('click', () => openFoodForm(button.dataset.editFood)));
       }
       function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(screen => screen.classList.toggle('active', screen.id === id));
+        const nextScreen = document.getElementById(id);
+        const previousScreen = document.querySelector('.screen.active');
+        const routes = ['home', 'calendar-screen', 'settings'];
+        const movingForward = routes.indexOf(id) >= routes.indexOf(previousScreen?.id);
+        if (previousScreen !== nextScreen) {
+          document.querySelectorAll('.screen.leaving').forEach(screen => screen.classList.remove('leaving', 'leave-next', 'leave-previous'));
+          const enterClass = movingForward ? 'enter-next' : 'enter-previous';
+          const leaveClass = movingForward ? 'leave-next' : 'leave-previous';
+          previousScreen?.classList.remove('active', 'enter-next', 'enter-previous');
+          previousScreen?.classList.add('leaving', leaveClass);
+          nextScreen?.classList.remove('enter-next', 'enter-previous', 'leave-next', 'leave-previous', 'leaving');
+          nextScreen?.classList.add('active', enterClass);
+          if (previousScreen) {
+            const finishLeave = event => {
+              if (event.target !== previousScreen) return;
+              previousScreen.classList.remove('leaving', leaveClass);
+              previousScreen.removeEventListener('animationend', finishLeave);
+            };
+            previousScreen.addEventListener('animationend', finishLeave);
+          }
+          if (nextScreen) {
+            const finishEnter = event => {
+              if (event.target !== nextScreen) return;
+              nextScreen.classList.remove(enterClass);
+              nextScreen.removeEventListener('animationend', finishEnter);
+            };
+            nextScreen.addEventListener('animationend', finishEnter);
+          }
+        }
         document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active', button.dataset.screen === id));
         updateAppBarTitle();
       }
