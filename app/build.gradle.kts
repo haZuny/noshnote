@@ -27,8 +27,8 @@ android {
         applicationId = "com.hazuny.noshnote"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -52,7 +52,8 @@ android {
             }
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                // 부분 최적화에서 Kotlin 상속 클래스의 패키지가 갈라져 시작 오류가 발생했다.
+                // 전체 최적화로 클래스 접근 관계를 함께 처리한다.
             }
         }
     }
