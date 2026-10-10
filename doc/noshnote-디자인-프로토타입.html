@@ -339,7 +339,7 @@
       }
       function updateAppBarTitle() {
         const activeId = document.querySelector('.screen.active')?.id || 'home';
-        const title = activeId === 'calendar-screen' ? '달력' : activeId === 'settings' ? '설정' : selectedDate === today ? '오늘 기록' : `${Number(selectedDate.slice(5,7))}월 ${Number(selectedDate.slice(8,10))}일 기록`;
+        const title = activeId === 'calendar-screen' ? '달력' : activeId === 'settings' ? '설정' : '식단 기록';
         document.getElementById('app-bar-title').textContent = title;
       }
       function openModal(html) { document.getElementById('sheet').innerHTML = html; document.getElementById('modal').classList.add('open'); }
