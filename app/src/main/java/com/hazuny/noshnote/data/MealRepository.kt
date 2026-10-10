@@ -3,6 +3,8 @@ package com.hazuny.noshnote.data
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MealRepository(private val mealDao: MealDao) {
     val entries = mealDao.observeAllEntries()
@@ -57,6 +59,19 @@ class MealRepository(private val mealDao: MealDao) {
             ),
         )
     }
+
+    suspend fun exportBackupJson(): String {
+        val data = mealDao.getBackupData()
+        return withContext(Dispatchers.Default) {
+            MealBackupJson.encode(data.entries, data.foodTemplates, data.goal, data.exportedAtEpochMillis)
+        }
+    }
+
+    suspend fun parseBackupJson(json: String): MealBackupData = withContext(Dispatchers.Default) {
+        MealBackupJson.decode(json)
+    }
+
+    suspend fun replaceAllDataFromBackup(data: MealBackupData) = mealDao.replaceAllData(data)
 
     suspend fun deleteEntry(id: Long) = mealDao.deleteEntry(id)
     suspend fun deleteTemplate(id: Long) = mealDao.deleteFoodTemplate(id)

@@ -186,6 +186,14 @@
         <button class="primary wide" type="submit">목표 저장</button>
       </form>
       <div class="settings-group card">
+        <h2>데이터 백업</h2>
+        <p class="subtle">식단 기록, 음식 템플릿, 목표를 JSON 파일로 저장하거나 복원해요.</p>
+        <div class="input-row">
+          <button class="secondary" id="backup-export">JSON 내보내기</button>
+          <button class="secondary" id="backup-import">JSON 가져오기</button>
+        </div>
+      </div>
+      <div class="settings-group card">
         <div class="section-head" style="margin:0 0 8px"><h2>내 음식</h2><button class="primary" id="new-food" style="min-height:36px;padding:0 11px;font-size:12px">음식 등록</button></div>
         <div id="food-list"></div>
       </div>
@@ -230,6 +238,33 @@
         return { goals: { kcal: 1900, protein: 140 }, foods: [], entries: [] };
       }
       function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      function exportBackup() {
+        const backup = { format: 'noshnote-prototype-backup', version: 1, exportedAt: new Date().toISOString(), data: state };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+        const link = document.createElement('a');
+        link.href = url; link.download = `NoshNote-backup-${today}.json`; link.click();
+        URL.revokeObjectURL(url);
+        toast('JSON 백업 파일을 저장했어요.');
+      }
+      function importBackup(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const backup = JSON.parse(String(reader.result));
+            const data = backup?.data;
+            if (backup?.format !== 'noshnote-prototype-backup' || backup.version !== 1 ||
+                !data || !Array.isArray(data.entries) || !Array.isArray(data.foods) || !data.goals) {
+              throw new Error('지원하지 않는 백업 형식');
+            }
+            const warning = `기존 데이터를 모두 교체할까요?\n기록 ${data.entries.length}개 · 음식 ${data.foods.length}개 · 목표 ${data.goals.kcal ? '포함' : '없음'}`;
+            if (!confirm(warning)) return;
+            state = data; save(); render(); toast('데이터를 복원했어요.');
+          } catch (_) {
+            toast('올바른 NoshNote JSON 백업 파일이 아니에요.');
+          }
+        };
+        reader.readAsText(file);
+      }
       function escapeHtml(value) { return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
       function fmt(value, digits=1) { return Number(value).toLocaleString('ko-KR', { maximumFractionDigits: digits }); }
       function dateLabel(key) { const d = parseDate(key); return `${d.getMonth()+1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]})`; }
@@ -513,6 +548,12 @@
       document.getElementById('quick-add').onclick = () => openDirectForm();
       document.getElementById('use-saved-food').onclick = () => openFoodPicker();
       document.getElementById('new-food').onclick = () => openFoodForm();
+      document.getElementById('backup-export').onclick = exportBackup;
+      document.getElementById('backup-import').onclick = () => {
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json,.json';
+        input.onchange = () => { if (input.files?.[0]) importBackup(input.files[0]); };
+        input.click();
+      };
       document.getElementById('modal').addEventListener('click', event => { if (event.target.id === 'modal') closeModal(); });
       document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
       render();

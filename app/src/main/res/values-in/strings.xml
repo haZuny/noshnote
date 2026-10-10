@@ -18,4 +18,18 @@
     <string name="period_pm">PM</string>
     <string name="hour_label">Jam</string>
     <string name="minute_label">Menit</string>
+    <string name="backup_title">Cadangan data</string>
+    <string name="backup_description">Simpan atau pulihkan catatan makanan, templat makanan, dan target ke file JSON.</string>
+    <string name="backup_export">Ekspor JSON</string>
+    <string name="backup_import">Impor JSON</string>
+    <string name="backup_export_success">File cadangan tersimpan.</string>
+    <string name="backup_import_success">Data dipulihkan.</string>
+    <string name="backup_operation_failed">Cadangan tidak dapat diselesaikan.</string>
+    <string name="backup_import_failed">File tidak dapat dibaca. Pastikan ini adalah cadangan JSON NoshNote.</string>
+    <string name="backup_import_confirm_title">Ganti data aplikasi?</string>
+    <string name="backup_import_summary">%1$d catatan makanan, %2$d templat makanan, target: %3$s</string>
+    <string name="backup_goal_included">disertakan</string>
+    <string name="backup_goal_not_included">tidak disertakan</string>
+    <string name="backup_replace_warning">Impor akan mengganti semua catatan makanan, templat makanan, dan target saat ini di perangkat ini.</string>
+    <string name="backup_replace">Ganti data</string>
 </resources>

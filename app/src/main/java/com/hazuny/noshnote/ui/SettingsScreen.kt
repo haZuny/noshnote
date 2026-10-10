@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +36,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.hazuny.noshnote.MealViewModel
+import com.hazuny.noshnote.data.MealBackupData
 import com.hazuny.noshnote.data.FoodTemplateEntity
 import com.hazuny.noshnote.ui.theme.NoshNoteSpacing
+import java.io.IOException
+import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -53,6 +62,39 @@ fun SettingsScreen(
     var editingTemplate by remember { mutableStateOf<FoodTemplateEntity?>(null) }
     var creatingTemplate by remember { mutableStateOf(false) }
     var deletingTemplate by remember { mutableStateOf<FoodTemplateEntity?>(null) }
+    var pendingImport by remember { mutableStateOf<MealBackupData?>(null) }
+    var backupMessage by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) coroutineScope.launch {
+            try {
+                val json = viewModel.exportBackupJson()
+                withContext(Dispatchers.IO) {
+                    val output = context.contentResolver.openOutputStream(uri)
+                        ?: throw IOException("백업 파일을 열 수 없습니다.")
+                    output.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                }
+                backupMessage = context.getString(R.string.backup_export_success)
+            } catch (_: Exception) {
+                backupMessage = context.getString(R.string.backup_operation_failed)
+            }
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) coroutineScope.launch {
+            try {
+                val json = withContext(Dispatchers.IO) {
+                    val input = context.contentResolver.openInputStream(uri)
+                        ?: throw IOException("백업 파일을 열 수 없습니다.")
+                    input.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                }
+                pendingImport = viewModel.parseBackupJson(json)
+                backupMessage = null
+            } catch (_: Exception) {
+                backupMessage = context.getString(R.string.backup_import_failed)
+            }
+        }
+    }
 
     LaunchedEffect(goalCalories, goalProtein) {
         calories = goalCalories?.let(::formatAmount).orEmpty()
@@ -110,6 +152,36 @@ fun SettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                     ) { AutoFitText(uiText(R.string.save_goal), maxLines = 1) }
+                }
+            }
+        }
+        item {
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            ) {
+                Column(Modifier.fillMaxWidth().padding(NoshNoteSpacing.cardPadding), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AutoFitText(uiText(R.string.backup_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(uiText(R.string.backup_description), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(onClick = { exportLauncher.launch("NoshNote-backup-${LocalDate.now()}.json") }, modifier = Modifier.weight(1f)) {
+                            AutoFitText(uiText(R.string.backup_export), maxLines = 1)
+                        }
+                        OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json")) }, modifier = Modifier.weight(1f)) {
+                            AutoFitText(uiText(R.string.backup_import), maxLines = 1)
+                        }
+                    }
+                    backupMessage?.let { message ->
+                        val success = message == context.getString(R.string.backup_export_success) ||
+                            message == context.getString(R.string.backup_import_success)
+                        Text(
+                            message,
+                            color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             }
         }
@@ -185,6 +257,35 @@ fun SettingsScreen(
                 }) { AutoFitText(uiText(R.string.delete), color = MaterialTheme.colorScheme.error, maxLines = 1) }
             },
             dismissButton = { TextButton(onClick = { deletingTemplate = null }) { AutoFitText(uiText(R.string.cancel), maxLines = 1) } },
+        )
+    }
+    pendingImport?.let { data ->
+        val goalIncluded = if (data.goal == null) uiText(R.string.backup_goal_not_included) else uiText(R.string.backup_goal_included)
+        AlertDialog(
+            onDismissRequest = { pendingImport = null },
+            title = { AutoFitText(uiText(R.string.backup_import_confirm_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(uiText(R.string.backup_import_summary, data.entries.size, data.foodTemplates.size, goalIncluded))
+                    Text(uiText(R.string.backup_replace_warning), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    coroutineScope.launch {
+                        try {
+                            viewModel.replaceAllDataFromBackup(data)
+                            backupMessage = context.getString(R.string.backup_import_success)
+                        } catch (_: Exception) {
+                            backupMessage = context.getString(R.string.backup_import_failed)
+                        }
+                        pendingImport = null
+                    }
+                }) { AutoFitText(uiText(R.string.backup_replace), color = MaterialTheme.colorScheme.error, maxLines = 1) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingImport = null }) { AutoFitText(uiText(R.string.cancel), maxLines = 1) }
+            },
         )
     }
 }

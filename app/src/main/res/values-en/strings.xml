@@ -137,4 +137,18 @@
     <string name="period_pm">PM</string>
     <string name="hour_label">Hour</string>
     <string name="minute_label">Minute</string>
+    <string name="backup_title">Data backup</string>
+    <string name="backup_description">Save or restore your meal records, food templates, and goal as a JSON file.</string>
+    <string name="backup_export">Export JSON</string>
+    <string name="backup_import">Import JSON</string>
+    <string name="backup_export_success">Backup file saved.</string>
+    <string name="backup_import_success">Data restored.</string>
+    <string name="backup_operation_failed">Could not complete the backup operation.</string>
+    <string name="backup_import_failed">Could not read this file. Make sure it is a NoshNote JSON backup.</string>
+    <string name="backup_import_confirm_title">Replace app data?</string>
+    <string name="backup_import_summary">%1$d meal records, %2$d food templates, goal: %3$s</string>
+    <string name="backup_goal_included">included</string>
+    <string name="backup_goal_not_included">not included</string>
+    <string name="backup_replace_warning">Importing will replace all meal records, food templates, and the current goal on this device.</string>
+    <string name="backup_replace">Replace data</string>
 </resources>

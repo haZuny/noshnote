@@ -31,4 +31,18 @@
     <string name="period_pm">下午</string>
     <string name="hour_label">时</string>
     <string name="minute_label">分</string>
+    <string name="backup_title">数据备份</string>
+    <string name="backup_description">将饮食记录、食物模板和目标保存为 JSON 文件或从中恢复。</string>
+    <string name="backup_export">导出 JSON</string>
+    <string name="backup_import">导入 JSON</string>
+    <string name="backup_export_success">备份文件已保存。</string>
+    <string name="backup_import_success">数据已恢复。</string>
+    <string name="backup_operation_failed">无法完成备份操作。</string>
+    <string name="backup_import_failed">无法读取此文件。请确认它是 NoshNote JSON 备份文件。</string>
+    <string name="backup_import_confirm_title">替换应用数据？</string>
+    <string name="backup_import_summary">饮食记录 %1$d 条，食物模板 %2$d 个，目标：%3$s</string>
+    <string name="backup_goal_included">已包含</string>
+    <string name="backup_goal_not_included">未包含</string>
+    <string name="backup_replace_warning">导入后，此设备上的所有饮食记录、食物模板和当前目标都将被替换。</string>
+    <string name="backup_replace">替换数据</string>
 </resources>

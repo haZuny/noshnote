@@ -18,4 +18,18 @@
     <string name="period_pm">вечера</string>
     <string name="hour_label">часы</string>
     <string name="minute_label">мин</string>
+    <string name="backup_title">Резервная копия данных</string>
+    <string name="backup_description">Сохраните или восстановите записи о питании, шаблоны продуктов и цель в файле JSON.</string>
+    <string name="backup_export">Экспорт JSON</string>
+    <string name="backup_import">Импорт JSON</string>
+    <string name="backup_export_success">Файл резервной копии сохранён.</string>
+    <string name="backup_import_success">Данные восстановлены.</string>
+    <string name="backup_operation_failed">Не удалось выполнить резервное копирование.</string>
+    <string name="backup_import_failed">Не удалось прочитать файл. Убедитесь, что это резервная копия NoshNote в формате JSON.</string>
+    <string name="backup_import_confirm_title">Заменить данные приложения?</string>
+    <string name="backup_import_summary">Записей: %1$d, шаблонов продуктов: %2$d, цель: %3$s</string>
+    <string name="backup_goal_included">есть</string>
+    <string name="backup_goal_not_included">нет</string>
+    <string name="backup_replace_warning">При импорте все записи, шаблоны продуктов и текущая цель на этом устройстве будут заменены.</string>
+    <string name="backup_replace">Заменить данные</string>
 </resources>
