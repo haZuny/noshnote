@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -133,6 +134,15 @@ private fun TimePickerField(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter,
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { showPicker = false },
+                        ),
+                )
                 AnimatedVisibility(
                     visibleState = pickerVisibility,
                     modifier = Modifier.align(Alignment.BottomCenter),
@@ -146,7 +156,13 @@ private fun TimePickerField(
                     ) + fadeOut(animationSpec = tween(durationMillis = 160)),
                 ) {
                     Surface(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {},
+                            ),
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                     ) {
