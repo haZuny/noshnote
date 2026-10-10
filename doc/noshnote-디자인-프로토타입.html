@@ -127,6 +127,10 @@
     .field { display: grid; gap: 6px; margin: 12px 0; }
     .field label { color: #52616b; font-size: 12px; font-weight: 600; }
     .field input, .field select { width: 100%; min-height: 45px; padding: 0 12px; border: 1px solid var(--line); border-radius: 11px; background: white; color: var(--ink); }
+    .quantity-stepper { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 6px; align-items: center; }
+    .quantity-stepper button { min-height: 44px; border: 1px solid var(--line); border-radius: 11px; background: white; color: var(--ink); font-size: 20px; font-weight: 700; }
+    .quantity-stepper button:disabled { opacity: .4; cursor: default; }
+    .quantity-stepper input { min-width: 0; }
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .food-manage { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
     .food-manage:first-of-type { border-top: 0; }
@@ -419,11 +423,21 @@
         const food = state.foods.find(item => item.id === foodId);
         if (!food) return;
         const eatenAt = nowTime();
-        openModal(`<div class="sheet-head"><h2 id="modal-title">${escapeHtml(food.name)} 기록</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><div class="notice">1 ${escapeHtml(food.unit)}당 ${fmt(food.kcal,0)} kcal · 단백질 ${fmt(food.protein)}g</div><div class="field"><label for="template-quantity">이번에 먹은 개수 / 수량 (${escapeHtml(food.unit)})</label><input id="template-quantity" type="number" min="0.01" step="any" value="1"></div><div class="input-row"><div class="field"><label for="template-time">먹은 시간</label><input id="template-time" type="time" value="${eatenAt}"></div><div class="field"><label for="template-tag">식사 태그 (자동 선택·수정 가능)</label><select id="template-tag">${tagOptions(inferMealTag(eatenAt))}</select></div></div><div class="notice" id="template-preview"></div><div class="sheet-actions"><button class="secondary" data-close>취소</button><button class="primary" id="save-template-entry">기록 추가</button></div>`);
+        openModal(`<div class="sheet-head"><h2 id="modal-title">${escapeHtml(food.name)} 기록</h2><button class="icon-btn" data-close aria-label="닫기">×</button></div><div class="notice">1 ${escapeHtml(food.unit)}당 ${fmt(food.kcal,0)} kcal · 단백질 ${fmt(food.protein)}g</div><div class="field"><label for="template-quantity">이번에 먹은 개수 / 수량 (${escapeHtml(food.unit)})</label><div class="quantity-stepper"><button type="button" id="template-quantity-decrease" aria-label="수량 줄이기">−</button><input id="template-quantity" type="number" min="0.01" step="any" value="1"><button type="button" id="template-quantity-increase" aria-label="수량 늘리기">＋</button></div></div><div class="input-row"><div class="field"><label for="template-time">먹은 시간</label><input id="template-time" type="time" value="${eatenAt}"></div><div class="field"><label for="template-tag">식사 태그 (자동 선택·수정 가능)</label><select id="template-tag">${tagOptions(inferMealTag(eatenAt))}</select></div></div><div class="notice" id="template-preview"></div><div class="sheet-actions"><button class="secondary" data-close>취소</button><button class="primary" id="save-template-entry">기록 추가</button></div>`);
         document.querySelectorAll('[data-close]').forEach(button => button.onclick = closeModal);
         const tagManuallySet = bindTimeTag('template-time', 'template-tag', false);
-        const update = () => { const quantity = Number(document.getElementById('template-quantity').value) || 0; document.getElementById('template-preview').textContent = `이번 섭취량 · ${fmt(quantity*food.kcal,0)} kcal · 단백질 ${fmt(quantity*food.protein)}g`; };
-        document.getElementById('template-quantity').oninput = update; update();
+        const quantityInput = document.getElementById('template-quantity');
+        const decreaseQuantity = document.getElementById('template-quantity-decrease');
+        const increaseQuantity = document.getElementById('template-quantity-increase');
+        const update = () => {
+          const quantity = Number(quantityInput.value) || 0;
+          document.getElementById('template-preview').textContent = `이번 섭취량 · ${fmt(quantity*food.kcal,0)} kcal · 단백질 ${fmt(quantity*food.protein)}g`;
+          decreaseQuantity.disabled = !(quantity > 1);
+        };
+        quantityInput.oninput = update;
+        increaseQuantity.onclick = () => { quantityInput.value = String(Math.max(0, Number(quantityInput.value) || 0) + 1); update(); };
+        decreaseQuantity.onclick = () => { const quantity = Number(quantityInput.value); if (quantity > 1) { quantityInput.value = String(quantity - 1); update(); } };
+        update();
         document.getElementById('save-template-entry').onclick = () => {
           const quantity = Number(document.getElementById('template-quantity').value);
           if (!(quantity > 0)) { toast('수량을 확인해 주세요.'); return; }

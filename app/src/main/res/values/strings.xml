@@ -63,6 +63,8 @@
     <string name="basis_unknown">확인되지 않음</string>
     <string name="template_record_title">%1$s 기록</string>
     <string name="template_quantity">이번에 먹은 양 (%1$s)</string>
+    <string name="decrease_quantity">수량 줄이기</string>
+    <string name="increase_quantity">수량 늘리기</string>
     <string name="current_intake">이번 섭취량 · %1$s kcal · 단백질 %2$sg</string>
     <string name="load_registered_food">등록 음식 불러오기</string>
     <string name="no_templates_help">등록한 음식이 아직 없어요. 바로 기록을 사용하거나 자주 먹는 음식을 등록해 보세요.</string>

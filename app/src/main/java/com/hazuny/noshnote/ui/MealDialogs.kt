@@ -37,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +57,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -498,6 +501,9 @@ fun TemplateRecordDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val tags = listOf("아침", "점심", "저녁", "간식", "태그 없음")
     val amount = quantity.toDoubleOrNull() ?: 0.0
+    val parsedQuantity = quantity.toDoubleOrNull()
+    val decreaseQuantityLabel = uiText(R.string.decrease_quantity)
+    val increaseQuantityLabel = uiText(R.string.increase_quantity)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -505,14 +511,45 @@ fun TemplateRecordDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 AutoFitText(uiText(R.string.template_nutrition, template.unit, formatAmount(template.caloriesPerUnitKcal), formatAmount(template.proteinPerUnitG)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-                OutlinedTextField(
-                    quantity,
-                    { quantity = it },
-                    label = { AutoFitText(uiText(R.string.template_quantity, template.unit), maxLines = 1) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    IconButton(
+                        onClick = {
+                            val current = quantity.toDoubleOrNull()
+                            if (current != null && current > 1.0) {
+                                quantity = formatInputAmount(current - 1.0)
+                            }
+                        },
+                        enabled = parsedQuantity != null && parsedQuantity > 1.0,
+                        modifier = Modifier
+                            .semantics { contentDescription = decreaseQuantityLabel }
+                            .testTag("template_quantity_decrease"),
+                    ) {
+                        Text("−", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    OutlinedTextField(
+                        quantity,
+                        { quantity = it },
+                        label = { AutoFitText(uiText(R.string.template_quantity, template.unit), maxLines = 1) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier.weight(1f).testTag("template_quantity_input"),
+                    )
+                    IconButton(
+                        onClick = {
+                            val current = quantity.toDoubleOrNull()?.takeIf { it >= 0.0 } ?: 0.0
+                            quantity = formatInputAmount(current + 1.0)
+                        },
+                        modifier = Modifier
+                            .semantics { contentDescription = increaseQuantityLabel }
+                            .testTag("template_quantity_increase"),
+                    ) {
+                        Text("+", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
                 AutoFitText(uiText(R.string.current_intake, formatAmount(amount * template.caloriesPerUnitKcal), formatAmount(amount * template.proteinPerUnitG)), fontWeight = FontWeight.SemiBold)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     TimePickerField(

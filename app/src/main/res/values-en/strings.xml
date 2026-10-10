@@ -63,6 +63,8 @@
     <string name="basis_unknown">Unknown</string>
     <string name="template_record_title">Log %1$s</string>
     <string name="template_quantity">Amount eaten (%1$s)</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
     <string name="current_intake">This serving · %1$s kcal · Protein %2$sg</string>
     <string name="load_registered_food">Use saved food</string>
     <string name="no_templates_help">No saved foods yet. Log food directly or save foods you eat often.</string>
